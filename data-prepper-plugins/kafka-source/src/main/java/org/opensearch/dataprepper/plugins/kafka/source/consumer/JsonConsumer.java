@@ -33,6 +33,8 @@ import org.opensearch.dataprepper.plugins.kafka.source.KafkaSourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+
 /**
  * * A helper class which helps to process the JSON records and write them into
  * the buffer. Offset handling and consumer re balance are also being handled
@@ -53,18 +55,19 @@ public class JsonConsumer implements KafkaSchemaTypeConsumer<String, JsonNode>, 
       Buffer<Record<Object>> buffer, KafkaSourceConfig sourceConfig, PluginMetrics pluginMetrics) {
     KafkaSourceBuffer kafkaSourceBuffer = new KafkaSourceBuffer(sourceConfig, pluginMetrics);
     kafkaJsonConsumer = consumer;
+    System.out.println("printing the consumerrecords in console $$$$$$$$$$$");
     try {
       currentOffsets.clear();
       consumer.subscribe(sourceConfig.getTopic());
       while (!status.get()) {
-        ConsumerRecords<String, JsonNode> records = consumer.poll(Duration.ofMillis(100));
+        ConsumerRecords<String, JsonNode> records = consumer.poll(Duration.ofMillis(sourceConfig.getConsumerGroupConfig().getMaxPollInterval().toSecondsPart()));
         if (!records.isEmpty() && records.count() > 0) {
           for (TopicPartition partition : records.partitions()) {
             List<ConsumerRecord<String, JsonNode>> partitionRecords = records.records(partition);
             for (ConsumerRecord<String, JsonNode> consumerRecord : partitionRecords) {
               currentOffsets.put(new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
                 new OffsetAndMetadata(consumerRecord.offset() + 1, null));
-              writeToBuffer(consumerRecord.value(), buffer);	
+              writeToBuffer(consumerRecord.value(), buffer, sourceConfig.getConsumerGroupConfig().getBufferDefaultTimeout());
               lastReadOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
               kafkaSourceBuffer.commitOffsets(partition, lastReadOffset, consumer);
             }
@@ -77,20 +80,21 @@ public class JsonConsumer implements KafkaSchemaTypeConsumer<String, JsonNode>, 
   }
 
   @SuppressWarnings("unchecked")
-  public void writeToBuffer(final JsonNode jsonNode, Buffer<Record<Object>> buffer) throws TimeoutException {
+  public void writeToBuffer(final JsonNode jsonNode, Buffer<Record<Object>> buffer, Duration bufferDefaultTimeout) throws TimeoutException {
+
     try {
       final JsonParser jsonParser = jsonFactory.createParser(jsonNode.toString());
       final Map<String, Object> innerJson = objectMapper.readValue(jsonParser, Map.class);
       Event event = JacksonLog.builder().withData(innerJson).build();
       Record<Object> jsonRecord = new Record<>(event);
-      buffer.write(jsonRecord, 1200);
+      buffer.write(jsonRecord, bufferDefaultTimeout.toSecondsPart());
     } catch (Exception e) {
       LOG.error("Unable to parse json data [{}], assuming plain text", jsonNode, e);
       final Map<String, Object> plainMap = new HashMap<>();
       plainMap.put(MESSAGE_KEY, jsonNode.toString());
       Event event = JacksonLog.builder().withData(plainMap).build();
       Record<Object> jsonRecord = new Record<>(event);
-      buffer.write(jsonRecord, 1200);
+      buffer.write(jsonRecord, bufferDefaultTimeout.toSecondsPart());
     }
   }
 

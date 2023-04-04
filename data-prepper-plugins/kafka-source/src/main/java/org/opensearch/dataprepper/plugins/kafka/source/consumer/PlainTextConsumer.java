@@ -49,7 +49,7 @@ public class PlainTextConsumer implements KafkaSchemaTypeConsumer<String, String
       currentOffsets.clear();
       consumer.subscribe(sourceConfig.getTopic());
       while (!status.get()) {
-        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(sourceConfig.getConsumerGroupConfig().getMaxPollInterval().toSecondsPart()));
         if (!records.isEmpty() && records.count() > 0) {
           for (TopicPartition partition : records.partitions()) {
             List<ConsumerRecord<String, String>> partitionRecords = records.records(partition);

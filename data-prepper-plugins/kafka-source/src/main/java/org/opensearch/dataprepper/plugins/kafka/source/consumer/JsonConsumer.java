@@ -55,7 +55,6 @@ public class JsonConsumer implements KafkaSchemaTypeConsumer<String, JsonNode>, 
       Buffer<Record<Object>> buffer, KafkaSourceConfig sourceConfig, PluginMetrics pluginMetrics) {
     KafkaSourceBuffer kafkaSourceBuffer = new KafkaSourceBuffer(sourceConfig, pluginMetrics);
     kafkaJsonConsumer = consumer;
-    System.out.println("printing the consumerrecords in console $$$$$$$$$$$");
     try {
       currentOffsets.clear();
       consumer.subscribe(sourceConfig.getTopic());

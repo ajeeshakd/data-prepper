@@ -11,6 +11,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 /**
  * * A helper class that helps to read user configuration values from
@@ -21,10 +22,12 @@ public class KafkaSourceConfig {
 
   @JsonProperty("bootstrap_servers")
   @NotNull
+  @Size(min = 1, message = "Bootstrap servers can't be empty")
   private List<String> bootStrapServers;
 
   @JsonProperty("topics")
   @NotNull
+  @Size(min = 1, max = 10, message = "The number of Topics should be between 1 and 10")
   private List<TopicsConfig> topics;
 
   public List<String> getBootStrapServers() {

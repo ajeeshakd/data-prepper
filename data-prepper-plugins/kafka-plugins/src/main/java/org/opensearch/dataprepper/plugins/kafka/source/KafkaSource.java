@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import io.micrometer.core.instrument.Counter;
 
-
 /**
  * The starting point of the Kafka-source plugin and the Kafka consumer
  * properties and kafka multithreaded consumers are being handled here.
@@ -140,6 +139,5 @@ public class KafkaSource implements Source<Record<Object>> {
     properties.put("sasl.mechanism", "PLAIN");
     properties.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + username + "\" password=\"" + password + "\";");
     properties.put("security.protocol", "SASL_PLAINTEXT");
-
   }
 }

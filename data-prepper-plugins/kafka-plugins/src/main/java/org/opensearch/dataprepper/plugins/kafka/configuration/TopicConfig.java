@@ -16,7 +16,6 @@ import jakarta.validation.constraints.NotNull;
  */
 
 public class TopicConfig {
-
   @JsonProperty("name")
   @NotNull
   @Valid
@@ -59,7 +58,6 @@ public class TopicConfig {
   public String getAuthType() {
 	return authType;
   }
-
   public void setAuthType(String authType) {
 	this.authType = authType;
   }

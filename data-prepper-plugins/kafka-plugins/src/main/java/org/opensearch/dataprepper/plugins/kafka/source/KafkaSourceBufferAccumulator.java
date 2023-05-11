@@ -30,7 +30,6 @@ import java.util.Map;
  */
 @SuppressWarnings("deprecation")
 public class KafkaSourceBufferAccumulator<K, V> {
-
   private static final Logger LOG = LoggerFactory.getLogger(KafkaSourceBufferAccumulator.class);
   private static final String MESSAGE_KEY = "message";
   private TopicConfig topicConfig;

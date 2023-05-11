@@ -20,9 +20,9 @@ public class KafkaSourceSchemaFactory {
   public static KafkaSourceSchemaConsumer getSchemaType(MessageFormat format) {
     switch (format) {
       case JSON:
-        //return new JsonConsumer();
+        //return new JsonConsumer();  //will enable this line of code once the json consumer is available
       case AVRO:
-        //return new AvroConsumer();
+        //return new AvroConsumer(); // will enable this line of code once the avro consumer is available
       case PLAINTEXT:
         return new PlainTextConsumer();
       default:

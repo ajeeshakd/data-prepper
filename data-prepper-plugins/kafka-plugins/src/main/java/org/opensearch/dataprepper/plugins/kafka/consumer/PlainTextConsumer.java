@@ -19,6 +19,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+
 import org.opensearch.dataprepper.metrics.PluginMetrics;
 import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.record.Record;
@@ -42,7 +43,6 @@ public class PlainTextConsumer implements KafkaSourceSchemaConsumer<String, Stri
   private long lastReadOffset = 0L;
   private KafkaConsumer<String, String> plainTxtConsumer;
   private volatile long lastCommitTime = System.currentTimeMillis();
-  private static final Long COMMIT_OFFSET_INTERVAL_MILLI_SEC = 300000L;
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
@@ -68,8 +68,8 @@ public class PlainTextConsumer implements KafkaSourceSchemaConsumer<String, Stri
               kafkaSourceBufferAccumulator.writeAllRecordToBuffer(kafkaRecords,buffer,topicConfig);
             }
           }
-          if(!offsetsToCommit.isEmpty()) {
-            commitOffsets(consumer);
+          if(!offsetsToCommit.isEmpty() && topicConfig.getConsumerGroupConfig().getAutoCommit().equalsIgnoreCase("false")) {
+            lastCommitTime = kafkaSourceBufferAccumulator.commitOffsets(consumer, lastCommitTime, offsetsToCommit);
           }
         }
       }
@@ -93,22 +93,6 @@ public class PlainTextConsumer implements KafkaSourceSchemaConsumer<String, Stri
       plainTxtConsumer.commitSync(offsetsToCommit);
     } catch (CommitFailedException e) {
       LOG.error("Failed to commit the record...", e);
-    }
-  }
-
-  public void commitOffsets(KafkaConsumer<String, String> consumer) {
-    try {
-      long currentTimeMillis = System.currentTimeMillis();
-      if (currentTimeMillis - lastCommitTime > COMMIT_OFFSET_INTERVAL_MILLI_SEC) {
-        if(!offsetsToCommit.isEmpty()) {
-          consumer.commitSync(offsetsToCommit);
-          offsetsToCommit.clear();
-          LOG.error("Succeeded to commit the offsets ...");
-        }
-        lastCommitTime = currentTimeMillis;
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to commit the offsets...", e);
     }
   }
 }

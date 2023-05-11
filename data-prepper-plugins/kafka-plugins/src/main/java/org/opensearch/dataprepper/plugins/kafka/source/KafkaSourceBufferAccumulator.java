@@ -9,6 +9,9 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.Counter;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.opensearch.dataprepper.metrics.PluginMetrics;
 import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.event.Event;
@@ -35,6 +38,7 @@ public class KafkaSourceBufferAccumulator<K, V> {
   private TopicConfig topicConfig;
   private PluginMetrics pluginMetrics;
   private final Counter kafkaConsumerWriteError;
+  private static final Long COMMIT_OFFSET_INTERVAL_MILLI_SEC = 300000L;
   private static final String KAFKA_CONSUMER_BUFFER_WRITE_ERROR = "kafkaConsumerBufferWriteError";
   private final JsonFactory jsonFactory = new JsonFactory();
   private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -74,5 +78,23 @@ public class KafkaSourceBufferAccumulator<K, V> {
       LOG.error("Error occurred while writing data to the buffer {}", e.getMessage());
       kafkaConsumerWriteError.increment();
     }
+  }
+
+  public long commitOffsets(KafkaConsumer<Object, Object> consumer, long lastCommitTime, Map<TopicPartition, OffsetAndMetadata> offsetsToCommit) {
+    try {
+      System.out.println("\n\n\t ----------------->>>>>>>>>> INSIDE THE COMMIT OFFSETS *************");
+      long currentTimeMillis = System.currentTimeMillis();
+      if (currentTimeMillis - lastCommitTime > COMMIT_OFFSET_INTERVAL_MILLI_SEC) {
+        if(!offsetsToCommit.isEmpty()) {
+          consumer.commitSync(offsetsToCommit);
+          offsetsToCommit.clear();
+          LOG.info("Succeeded to commit the offsets ...");
+        }
+        lastCommitTime = currentTimeMillis;
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to commit the offsets...", e);
+    }
+    return lastCommitTime;
   }
 }

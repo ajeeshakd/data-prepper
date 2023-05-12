@@ -47,7 +47,7 @@ public class AvroConsumer implements KafkaSourceSchemaConsumer<String, GenericRe
     private volatile long lastCommitTime = System.currentTimeMillis();
 
     @Override
-    public void consumeRecords(KafkaConsumer<String, GenericRecord> consumer, AtomicBoolean status, Buffer<Record<Object>> buffer, TopicConfig topicConfig, PluginMetrics pluginMetrics, String schemaType) {
+    public void consumeRecords(final KafkaConsumer<String, GenericRecord> consumer, final AtomicBoolean status, final Buffer<Record<Object>> buffer, final TopicConfig topicConfig, PluginMetrics pluginMetrics, final String schemaType) {
         KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator = new KafkaSourceBufferAccumulator(topicConfig, pluginMetrics, schemaType);
         kafkaAvroConsumer = consumer;
         try {

@@ -45,8 +45,8 @@ public class JsonConsumer implements KafkaSourceSchemaConsumer<String, JsonNode>
     private volatile long lastCommitTime = System.currentTimeMillis();
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void consumeRecords(KafkaConsumer<String, JsonNode> consumer, AtomicBoolean status,
-                               Buffer<Record<Object>> buffer, TopicConfig topicConfig, PluginMetrics pluginMetrics, String schemaType) {
+    public void consumeRecords(final KafkaConsumer<String, JsonNode> consumer, final AtomicBoolean status,
+                               final Buffer<Record<Object>> buffer, final TopicConfig topicConfig, PluginMetrics pluginMetrics, final String schemaType) {
         KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator = new KafkaSourceBufferAccumulator(topicConfig, pluginMetrics, schemaType);
         kafkaJsonConsumer = consumer;
         try {

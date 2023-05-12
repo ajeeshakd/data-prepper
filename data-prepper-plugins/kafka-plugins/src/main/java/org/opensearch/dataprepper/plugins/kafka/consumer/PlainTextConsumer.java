@@ -45,8 +45,8 @@ public class PlainTextConsumer implements KafkaSourceSchemaConsumer<String, Stri
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public void consumeRecords(KafkaConsumer<String, String> consumer, final AtomicBoolean status,
-                               Buffer<Record<Object>> buffer, final TopicConfig topicConfig, PluginMetrics pluginMetrics, final String schemaType) {
+    public void consumeRecords(final KafkaConsumer<String, String> consumer, final AtomicBoolean status,
+                               final Buffer<Record<Object>> buffer, final TopicConfig topicConfig, PluginMetrics pluginMetrics, final String schemaType) {
         KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator = new KafkaSourceBufferAccumulator(topicConfig, pluginMetrics, schemaType);
         plainTxtConsumer = consumer;
         try {

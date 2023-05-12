@@ -42,7 +42,7 @@ public class MultithreadedConsumer implements Runnable {
 	private PluginMetrics pluginMetrics;
 	private String schemaType;
 	public MultithreadedConsumer(final String consumerId, final String consumerGroupId, final Properties properties,
-								 final TopicConfig topicConfig, Buffer<Record<Object>> buffer, PluginMetrics pluginMetric, final String schemaType) {
+								 final TopicConfig topicConfig, final Buffer<Record<Object>> buffer, PluginMetrics pluginMetric, final String schemaType) {
 		this.consumerProperties = Objects.requireNonNull(properties);
 		this.consumerId = consumerId;
 		this.consumerGroupId = consumerGroupId;

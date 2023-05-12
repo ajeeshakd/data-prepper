@@ -17,6 +17,9 @@ public class SchemaConfig {
   @JsonProperty("registry_url")
   private String registryURL;
 
+  @JsonProperty("version")
+  private int version;
+
   @JsonProperty("key_deserializer")
   private String keyDeserializer;
 
@@ -35,6 +38,14 @@ public class SchemaConfig {
 
   public void setRegistryURL(String registryURL) {
     this.registryURL = registryURL;
+  }
+
+  public int getVersion() {
+    return version;
+  }
+
+  public void setVersion(int version) {
+    this.version = version;
   }
 
   public String getKeyDeserializer() {

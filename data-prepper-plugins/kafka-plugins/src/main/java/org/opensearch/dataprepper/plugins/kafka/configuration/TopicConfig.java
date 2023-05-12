@@ -36,6 +36,10 @@ public class TopicConfig {
   @NotNull
   @Valid
   private SchemaConfig schemaConfig;
+
+  @JsonProperty("authentication")
+  AuthConfig authConfig;
+
   public String getName() {
     return topic;
   }
@@ -65,5 +69,13 @@ public class TopicConfig {
   }
    public void setSchemaConfig(SchemaConfig schemaConfig) {
 	this.schemaConfig = schemaConfig;
+  }
+
+  public AuthConfig getAuthConfig() {
+    return authConfig;
+  }
+
+  public void setAuthConfig(AuthConfig authConfig) {
+    this.authConfig = authConfig;
   }
 }

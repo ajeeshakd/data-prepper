@@ -141,13 +141,13 @@ public class KafkaSource implements Source<Record<Object>> {
   private void setPropertiesForSchemaType(TopicsConfig topicConfig, Properties properties, String schemaType) {
     if (schemaType.equalsIgnoreCase(MessageFormat.JSON.toString())) {
       properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-              topicConfig.getTopic().getSchemaConfig().getKeyDeserializer());
+              StringDeserializer.class);
       properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaSourceJsonDeserializer.class);
     } else if (schemaType.equalsIgnoreCase(MessageFormat.PLAINTEXT.toString())) {
       properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-              topicConfig.getTopic().getSchemaConfig().getKeyDeserializer());
+              StringDeserializer.class);
       properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-              topicConfig.getTopic().getSchemaConfig().getValueDeserializer());
+              StringDeserializer.class);
     } else if (schemaType.equalsIgnoreCase(MessageFormat.AVRO.toString())) {
       properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
               StringDeserializer.class);

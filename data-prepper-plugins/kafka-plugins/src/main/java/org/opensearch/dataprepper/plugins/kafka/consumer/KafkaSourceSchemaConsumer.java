@@ -20,6 +20,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("deprecation")
 public interface KafkaSourceSchemaConsumer<K, V> {
 
-  public void consumeRecords(KafkaConsumer<K, V> consumer, AtomicBoolean status,
-                             Buffer<Record<Object>> buffer, TopicConfig sourceConfig, PluginMetrics pluginMetrics, String schemaType);
+  public void consumeRecords(final KafkaConsumer<K, V> consumer, AtomicBoolean status,
+                             Buffer<Record<Object>> buffer, final TopicConfig sourceConfig, PluginMetrics pluginMetrics, final String schemaType);
 }

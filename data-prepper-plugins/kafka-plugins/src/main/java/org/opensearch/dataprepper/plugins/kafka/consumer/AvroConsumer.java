@@ -7,6 +7,8 @@ package org.opensearch.dataprepper.plugins.kafka.consumer;
 
 
 import org.apache.avro.generic.GenericRecord;
+import org.apache.kafka.clients.consumer.CommitFailedException;
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -21,13 +23,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -36,23 +39,21 @@ import java.util.concurrent.TimeoutException;
  */
 
 @SuppressWarnings("deprecation")
-public class AvroConsumer implements KafkaSourceSchemaConsumer<String, GenericRecord> {
+public class AvroConsumer implements KafkaSourceSchemaConsumer<String, GenericRecord>, ConsumerRebalanceListener {
     private static final Logger LOG = LoggerFactory.getLogger(AvroConsumer.class);
     private Map<TopicPartition, OffsetAndMetadata> offsetsToCommit = new HashMap<>();
     private long lastReadOffset = 0L;
     private KafkaConsumer<String, GenericRecord> kafkaAvroConsumer;
     private volatile long lastCommitTime = System.currentTimeMillis();
-    private static final Long COMMIT_OFFSET_INTERVAL_MILLI_SEC = 300000L;
 
     @Override
     public void consumeRecords(KafkaConsumer<String, GenericRecord> consumer, AtomicBoolean status, Buffer<Record<Object>> buffer, TopicConfig topicConfig, PluginMetrics pluginMetrics, String schemaType) {
         KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator = new KafkaSourceBufferAccumulator(topicConfig, pluginMetrics, schemaType);
         kafkaAvroConsumer = consumer;
-        System.out.println("inside avro consumer");
-        try{
-            System.out.println("topicConfig.getName()::"+topicConfig.getName());
+        try {
             consumer.subscribe(Arrays.asList(topicConfig.getName()));
             while (!status.get()) {
+                offsetsToCommit.clear();
                 ConsumerRecords<String, GenericRecord> records = consumer.poll(Duration.ofMillis(100));
                 if (!records.isEmpty() && records.count() > 0) {
                     for (TopicPartition partition : records.partitions()) {
@@ -61,54 +62,39 @@ public class AvroConsumer implements KafkaSourceSchemaConsumer<String, GenericRe
                         for (ConsumerRecord<String, GenericRecord> consumerRecord : partitionRecords) {
                             offsetsToCommit.put(new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
                                     new OffsetAndMetadata(consumerRecord.offset() + 1, null));
-                            System.out.println("consumerRecord.value()::"+consumerRecord.value());
-                            kafkaRecords.add(kafkaSourceBufferAccumulator.getEventRecord(consumerRecord.value().toString(),topicConfig));
+                            kafkaRecords.add(kafkaSourceBufferAccumulator.getEventRecord(consumerRecord.value().toString(), topicConfig));
                             lastReadOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
                         }
-                        if (!kafkaRecords.isEmpty()){
-                            kafkaSourceBufferAccumulator.writeAllRecordToBuffer(kafkaRecords,buffer,topicConfig);
+                        if (!kafkaRecords.isEmpty()) {
+                            kafkaSourceBufferAccumulator.writeAllRecordToBuffer(kafkaRecords, buffer, topicConfig);
                         }
                     }
-                    if(!offsetsToCommit.isEmpty()) {
-                        commitOffsets(consumer);
+                    if (!offsetsToCommit.isEmpty() && topicConfig.getConsumerGroupConfig().getAutoCommit().equalsIgnoreCase("false")) {
+                        lastCommitTime = kafkaSourceBufferAccumulator.commitOffsets(consumer, lastCommitTime, offsetsToCommit);
                     }
                 }
             }
-        }
-        catch (Exception exp){
+        } catch (Exception exp) {
             LOG.error("Error while reading avro records from the topic...{}", exp.getMessage());
             exp.printStackTrace();
         }
     }
 
-    public void commitOffsets(KafkaConsumer<String, GenericRecord> consumer) {
-        try {
-            long currentTimeMillis = System.currentTimeMillis();
-            if (currentTimeMillis - lastCommitTime > COMMIT_OFFSET_INTERVAL_MILLI_SEC) {
-                if(!offsetsToCommit.isEmpty()) {
-                    consumer.commitSync(offsetsToCommit);
-                    offsetsToCommit.clear();
-                    LOG.error("Succeeded to commit the offsets ...");
-                }
-                lastCommitTime = currentTimeMillis;
-            }
-        } catch (Exception e) {
-            LOG.error("Failed to commit the offsets...", e);
+    @Override
+    public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
+        LOG.trace("onPartitionsAssigned() callback triggered and Closing the consumer...");
+        for (TopicPartition partition : partitions) {
+            kafkaAvroConsumer.seek(partition, lastReadOffset);
         }
     }
 
-    private void writeToBuffer(final GenericRecord record, Buffer<Record<Object>> buffer) throws TimeoutException {
+    @Override
+    public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
+        LOG.trace("onPartitionsRevoked() callback triggered and Committing the offsets: {} ", offsetsToCommit);
         try {
-           // System.out.println("key::"+record.ge);
-            buffer.write((Record<Object>) record, 1200);
-        } catch (Exception e) {
-           //   System.out.println("Exception occured"+e);
-           // LOG.error("Unable to parse json data [{}], assuming plain text", jsonNode, e);
-//            final Map<String, Object> plainMap = new HashMap<>();
-//            plainMap.put(MESSAGE_KEY, jsonNode.toString());
-//            Event event = JacksonLog.builder().withData(plainMap).build();
-//            Record<Object> jsonRecord = new Record<>(event);
-//            buffer.write(jsonRecord, 1200);
+            kafkaAvroConsumer.commitSync(offsetsToCommit);
+        } catch (CommitFailedException e) {
+            LOG.error("Failed to commit the record...", e);
         }
     }
 }

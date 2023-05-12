@@ -16,7 +16,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.opensearch.dataprepper.metrics.PluginMetrics;
-import org.opensearch.dataprepper.plugins.kafka.configuration.*;
+import org.opensearch.dataprepper.plugins.kafka.configuration.ConsumerConfigs;
+import org.opensearch.dataprepper.plugins.kafka.configuration.SchemaConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
 import org.opensearch.dataprepper.plugins.kafka.consumer.MultithreadedConsumer;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -28,7 +32,11 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

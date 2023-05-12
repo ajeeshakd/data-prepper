@@ -41,8 +41,8 @@ public class MultithreadedConsumer implements Runnable {
 	private Properties consumerProperties;
 	private PluginMetrics pluginMetrics;
 	private String schemaType;
-	public MultithreadedConsumer(String consumerId, String consumerGroupId, Properties properties,
-								 TopicConfig topicConfig, Buffer<Record<Object>> buffer, PluginMetrics pluginMetric, String schemaType) {
+	public MultithreadedConsumer(final String consumerId, final String consumerGroupId, final Properties properties,
+								 final TopicConfig topicConfig, Buffer<Record<Object>> buffer, PluginMetrics pluginMetric, final String schemaType) {
 		this.consumerProperties = Objects.requireNonNull(properties);
 		this.consumerId = consumerId;
 		this.consumerGroupId = consumerGroupId;
@@ -58,10 +58,10 @@ public class MultithreadedConsumer implements Runnable {
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public void run() {
-		LOG.info("Consumer group: {} and Consumer :{} executed on : {}",consumerGroupId, consumerId,  LocalDateTime.now());
+		LOG.info("Consumer group: {} and Consumer :{} executed on : {}", consumerGroupId, consumerId, LocalDateTime.now());
 		try {
 			MessageFormat schema = MessageFormat.getByMessageFormatByName(schemaType);
-			switch(schema){
+			switch (schema) {
 				case JSON:
 					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.JSON).consumeRecords(jsonConsumer, status, buffer,
 							topicConfig, pluginMetrics, schemaType);
@@ -106,5 +106,4 @@ public class MultithreadedConsumer implements Runnable {
 			jsonConsumer.wakeup();
 		}
 	}
-
 }

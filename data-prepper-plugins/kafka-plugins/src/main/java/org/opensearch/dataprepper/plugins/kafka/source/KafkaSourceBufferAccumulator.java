@@ -29,73 +29,73 @@ import java.util.Map;
 
 /**
  * * A helper utility class which helps to write different formats of records
- * like json and string to the buffer.
+ * like json,avro and plaintext to the buffer.
  */
 @SuppressWarnings("deprecation")
 public class KafkaSourceBufferAccumulator<K, V> {
-  private static final Logger LOG = LoggerFactory.getLogger(KafkaSourceBufferAccumulator.class);
-  private static final String MESSAGE_KEY = "message";
-  private TopicConfig topicConfig;
-  private PluginMetrics pluginMetrics;
-  private final Counter kafkaConsumerWriteError;
-  private static final Long COMMIT_OFFSET_INTERVAL_MILLI_SEC = 300000L;
-  private static final String KAFKA_CONSUMER_BUFFER_WRITE_ERROR = "kafkaConsumerBufferWriteError";
-  private final JsonFactory jsonFactory = new JsonFactory();
-  private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final Logger LOG = LoggerFactory.getLogger(KafkaSourceBufferAccumulator.class);
+    private static final String MESSAGE_KEY = "message";
+    private TopicConfig topicConfig;
+    private PluginMetrics pluginMetrics;
+    private final Counter kafkaConsumerWriteError;
+    private static final Long COMMIT_OFFSET_INTERVAL_MILLI_SEC = 300000L;
+    private static final String KAFKA_CONSUMER_BUFFER_WRITE_ERROR = "kafkaConsumerBufferWriteError";
+    private final JsonFactory jsonFactory = new JsonFactory();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
-  private String schemaType;
+    private String schemaType;
 
-  public KafkaSourceBufferAccumulator(TopicConfig topicConfigs, PluginMetrics pluginMetric, String schemaType) {
-    this.topicConfig = topicConfigs;
-    this.pluginMetrics = pluginMetric;
-    this.schemaType = schemaType;
-    this.kafkaConsumerWriteError = pluginMetrics.counter(KAFKA_CONSUMER_BUFFER_WRITE_ERROR);
-  }
-
-  public Record<Object> getEventRecord(final String line, TopicConfig topicConfig) {Map<String, Object> message = new HashMap<>();
-    MessageFormat messageFormat = MessageFormat.getByMessageFormatByName(schemaType);
-    if (messageFormat
-            .equals(MessageFormat.PLAINTEXT)) {
-      message.put(MESSAGE_KEY, line);
-    } else if (messageFormat.equals(MessageFormat.JSON) || messageFormat.equals(MessageFormat.AVRO)) {
-      try {
-        final JsonParser jsonParser = jsonFactory.createParser(line);
-        message = objectMapper.readValue(jsonParser, Map.class);
-      } catch (Exception e) {
-        LOG.error("Unable to parse json data [{}], assuming plain text", line, e);
-        message.put(MESSAGE_KEY, line);
-      }
-
+    public KafkaSourceBufferAccumulator(final TopicConfig topicConfigs, PluginMetrics pluginMetric, final String schemaType) {
+        this.topicConfig = topicConfigs;
+        this.pluginMetrics = pluginMetric;
+        this.schemaType = schemaType;
+        this.kafkaConsumerWriteError = pluginMetrics.counter(KAFKA_CONSUMER_BUFFER_WRITE_ERROR);
     }
-    Event event = JacksonLog.builder().withData(message).build();
-    return new Record<>(event);
-  }
 
-  public synchronized void writeAllRecordToBuffer(List<Record<Object>> kafkaRecords, final Buffer<Record<Object>> buffer, TopicConfig topicConfig) {
-    try {
-      buffer.writeAll(kafkaRecords,
-              topicConfig.getConsumerGroupConfig().getBufferDefaultTimeout().toSecondsPart());
-      LOG.info("Total number of records publish in buffer {} for Topic : {}", kafkaRecords.size(),topicConfig.getName());
-    } catch (Exception e) {
-      LOG.error("Error occurred while writing data to the buffer {}", e.getMessage());
-      kafkaConsumerWriteError.increment();
-    }
-  }
-
-  public long commitOffsets(KafkaConsumer<Object, Object> consumer, long lastCommitTime, Map<TopicPartition, OffsetAndMetadata> offsetsToCommit) {
-    try {
-      long currentTimeMillis = System.currentTimeMillis();
-      if (currentTimeMillis - lastCommitTime > COMMIT_OFFSET_INTERVAL_MILLI_SEC) {
-        if(!offsetsToCommit.isEmpty()) {
-          consumer.commitSync(offsetsToCommit);
-          offsetsToCommit.clear();
-          LOG.info("Succeeded to commit the offsets ...");
+    public Record<Object> getEventRecord(final String line, final TopicConfig topicConfig) {
+        Map<String, Object> message = new HashMap<>();
+        MessageFormat messageFormat = MessageFormat.getByMessageFormatByName(schemaType);
+        if (messageFormat
+                .equals(MessageFormat.PLAINTEXT)) {
+            message.put(MESSAGE_KEY, line);
+        } else if (messageFormat.equals(MessageFormat.JSON) || messageFormat.equals(MessageFormat.AVRO)) {
+            try {
+                final JsonParser jsonParser = jsonFactory.createParser(line);
+                message = objectMapper.readValue(jsonParser, Map.class);
+            } catch (Exception e) {
+                LOG.error("Unable to parse json/avro data [{}], assuming plain text", line, e);
+                message.put(MESSAGE_KEY, line);
+            }
         }
-        lastCommitTime = currentTimeMillis;
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to commit the offsets...", e);
+        Event event = JacksonLog.builder().withData(message).build();
+        return new Record<>(event);
     }
-    return lastCommitTime;
-  }
+
+    public synchronized void writeAllRecordToBuffer(final List<Record<Object>> kafkaRecords, final Buffer<Record<Object>> buffer, final TopicConfig topicConfig) {
+        try {
+            buffer.writeAll(kafkaRecords,
+                    topicConfig.getConsumerGroupConfig().getBufferDefaultTimeout().toSecondsPart());
+            LOG.info("Total number of records publish in buffer {} for Topic : {}", kafkaRecords.size(), topicConfig.getName());
+        } catch (Exception e) {
+            LOG.error("Error occurred while writing data to the buffer {}", e.getMessage());
+            kafkaConsumerWriteError.increment();
+        }
+    }
+
+    public long commitOffsets(final KafkaConsumer<Object, Object> consumer, long lastCommitTime, Map<TopicPartition, OffsetAndMetadata> offsetsToCommit) {
+        try {
+            long currentTimeMillis = System.currentTimeMillis();
+            if (currentTimeMillis - lastCommitTime > COMMIT_OFFSET_INTERVAL_MILLI_SEC) {
+                if (!offsetsToCommit.isEmpty()) {
+                    consumer.commitSync(offsetsToCommit);
+                    offsetsToCommit.clear();
+                    LOG.info("Succeeded to commit the offsets ...");
+                }
+                lastCommitTime = currentTimeMillis;
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to commit the offsets...", e);
+        }
+        return lastCommitTime;
+    }
 }

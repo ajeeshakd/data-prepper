@@ -47,7 +47,7 @@ public class JsonConsumer implements KafkaSourceSchemaConsumer<String, JsonNode>
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void consumeRecords(final KafkaConsumer<String, JsonNode> consumer, final AtomicBoolean status,
                                final Buffer<Record<Object>> buffer, final TopicConfig topicConfig, PluginMetrics pluginMetrics, final String schemaType) {
-        KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator = new KafkaSourceBufferAccumulator(topicConfig, pluginMetrics, schemaType);
+        KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator = new KafkaSourceBufferAccumulator(pluginMetrics, schemaType);
         kafkaJsonConsumer = consumer;
         try {
             consumer.subscribe(Arrays.asList(topicConfig.getName()));
@@ -61,7 +61,7 @@ public class JsonConsumer implements KafkaSourceSchemaConsumer<String, JsonNode>
                         for (ConsumerRecord<String, JsonNode> consumerRecord : partitionRecords) {
                             offsetsToCommit.put(new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
                                     new OffsetAndMetadata(consumerRecord.offset() + 1, null));
-                            kafkaRecords.add(kafkaSourceBufferAccumulator.getEventRecord(consumerRecord.value().toString(), topicConfig));
+                            kafkaRecords.add(kafkaSourceBufferAccumulator.getEventRecord(consumerRecord.value().toString()));
                             lastReadOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
                         }
                         if (!kafkaRecords.isEmpty()) {
@@ -74,7 +74,7 @@ public class JsonConsumer implements KafkaSourceSchemaConsumer<String, JsonNode>
                 }
             }
         } catch (Exception exp) {
-            LOG.error("Error while reading the json records from the topic...{}", exp.getMessage());
+            LOG.error("Error while reading the json records from the topic...", exp);
         }
     }
 

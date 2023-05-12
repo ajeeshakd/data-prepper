@@ -191,10 +191,10 @@ public class KafkaSource implements Source<Record<Object>> {
           schemaType = MessageFormat.AVRO.toString();
         }
       } else {
-        LOG.error("GET request failed while fetching the schema registry details : " + responseCode);
+        LOG.error("GET request failed while fetching the schema registry details : {}", responseCode);
       }
     } catch (IOException e) {
-      LOG.error("An error while fetching the confluent schema registry details : {}", e);
+      LOG.error("An error while fetching the confluent schema registry details : ", e);
     }
     return schemaType;
   }

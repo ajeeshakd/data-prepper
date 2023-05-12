@@ -47,7 +47,7 @@ public class PlainTextConsumer implements KafkaSourceSchemaConsumer<String, Stri
     @Override
     public void consumeRecords(final KafkaConsumer<String, String> consumer, final AtomicBoolean status,
                                final Buffer<Record<Object>> buffer, final TopicConfig topicConfig, PluginMetrics pluginMetrics, final String schemaType) {
-        KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator = new KafkaSourceBufferAccumulator(topicConfig, pluginMetrics, schemaType);
+        KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator = new KafkaSourceBufferAccumulator(pluginMetrics, schemaType);
         plainTxtConsumer = consumer;
         try {
             consumer.subscribe(Arrays.asList(topicConfig.getName()));
@@ -61,7 +61,7 @@ public class PlainTextConsumer implements KafkaSourceSchemaConsumer<String, Stri
                         for (ConsumerRecord<String, String> consumerRecord : partitionRecords) {
                             offsetsToCommit.put(new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
                                     new OffsetAndMetadata(consumerRecord.offset() + 1, null));
-                            kafkaRecords.add(kafkaSourceBufferAccumulator.getEventRecord(consumerRecord.value(), topicConfig));
+                            kafkaRecords.add(kafkaSourceBufferAccumulator.getEventRecord(consumerRecord.value()));
                             lastReadOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
                         }
                         if (!kafkaRecords.isEmpty()) {
@@ -74,7 +74,7 @@ public class PlainTextConsumer implements KafkaSourceSchemaConsumer<String, Stri
                 }
             }
         } catch (Exception exp) {
-            LOG.error("Error while reading plain text records from the topic...{}", exp);
+            LOG.error("Error while reading plain text records from the topic...", exp);
         }
     }
 

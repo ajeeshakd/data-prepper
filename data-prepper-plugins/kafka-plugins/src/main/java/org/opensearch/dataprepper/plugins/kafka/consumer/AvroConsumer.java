@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -48,7 +47,7 @@ public class AvroConsumer implements KafkaSourceSchemaConsumer<String, GenericRe
 
     @Override
     public void consumeRecords(final KafkaConsumer<String, GenericRecord> consumer, final AtomicBoolean status, final Buffer<Record<Object>> buffer, final TopicConfig topicConfig, PluginMetrics pluginMetrics, final String schemaType) {
-        KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator = new KafkaSourceBufferAccumulator(topicConfig, pluginMetrics, schemaType);
+        KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator = new KafkaSourceBufferAccumulator(pluginMetrics, schemaType);
         kafkaAvroConsumer = consumer;
         try {
             consumer.subscribe(Arrays.asList(topicConfig.getName()));
@@ -62,7 +61,7 @@ public class AvroConsumer implements KafkaSourceSchemaConsumer<String, GenericRe
                         for (ConsumerRecord<String, GenericRecord> consumerRecord : partitionRecords) {
                             offsetsToCommit.put(new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
                                     new OffsetAndMetadata(consumerRecord.offset() + 1, null));
-                            kafkaRecords.add(kafkaSourceBufferAccumulator.getEventRecord(consumerRecord.value().toString(), topicConfig));
+                            kafkaRecords.add(kafkaSourceBufferAccumulator.getEventRecord(consumerRecord.value().toString()));
                             lastReadOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
                         }
                         if (!kafkaRecords.isEmpty()) {
@@ -75,7 +74,7 @@ public class AvroConsumer implements KafkaSourceSchemaConsumer<String, GenericRe
                 }
             }
         } catch (Exception exp) {
-            LOG.error("Error while reading avro records from the topic...{}", exp.getMessage());
+            LOG.error("Error while reading avro records from the topic...", exp);
             exp.printStackTrace();
         }
     }

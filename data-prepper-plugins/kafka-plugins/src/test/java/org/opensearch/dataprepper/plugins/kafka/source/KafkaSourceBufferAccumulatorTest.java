@@ -74,7 +74,7 @@ class KafkaSourceBufferAccumulatorTest {
 		when(topicConfig.getSchemaConfig()).thenReturn(mock(SchemaConfig.class));
 		
 		when(schemaConfig.getRecordType()).thenReturn("string");
-		buffer = new KafkaSourceBufferAccumulator<>(topicConfig, pluginMetrics,"json");
+		buffer = new KafkaSourceBufferAccumulator<>(pluginMetrics,"json");
 	}
 
 	@Test
@@ -88,9 +88,9 @@ class KafkaSourceBufferAccumulatorTest {
 		topicConfig.setConsumerGroupConfig(consumerConfigs);
 
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
-		doCallRealMethod().when(spyBuffer).getEventRecord("anyString", topicConfig);
-		spyBuffer.getEventRecord("anyString", topicConfig);
-		verify(spyBuffer).getEventRecord("anyString", topicConfig);
+		doCallRealMethod().when(spyBuffer).getEventRecord("anyString");
+		spyBuffer.getEventRecord("anyString");
+		verify(spyBuffer).getEventRecord("anyString");
 	}
 
 	@Test
@@ -105,9 +105,9 @@ class KafkaSourceBufferAccumulatorTest {
 		topicConfig.setConsumerGroupConfig(consumerConfigs);
 
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
-		doCallRealMethod().when(spyBuffer).getEventRecord(json, topicConfig);
-		spyBuffer.getEventRecord(json, topicConfig);
-		verify(spyBuffer).getEventRecord(json, topicConfig);
+		doCallRealMethod().when(spyBuffer).getEventRecord(json);
+		spyBuffer.getEventRecord(json);
+		verify(spyBuffer).getEventRecord(json);
 	}
 
 	@Test
@@ -121,9 +121,9 @@ class KafkaSourceBufferAccumulatorTest {
 		topicConfig.setConsumerGroupConfig(consumerConfigs);
 
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
-		doCallRealMethod().when(spyBuffer).getEventRecord("anyString", topicConfig);
-		spyBuffer.getEventRecord("anyString", topicConfig);
-		verify(spyBuffer).getEventRecord("anyString", topicConfig);
+		doCallRealMethod().when(spyBuffer).getEventRecord("anyString");
+		spyBuffer.getEventRecord("anyString");
+		verify(spyBuffer).getEventRecord("anyString");
 	}
 
 	@Test
@@ -137,9 +137,9 @@ class KafkaSourceBufferAccumulatorTest {
 		topicConfig.setConsumerGroupConfig(consumerConfigs);
 
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
-		doCallRealMethod().when(spyBuffer).getEventRecord(null, topicConfig);
-		spyBuffer.getEventRecord(null, topicConfig);
-		verify(spyBuffer).getEventRecord(null, topicConfig);
+		doCallRealMethod().when(spyBuffer).getEventRecord(null);
+		spyBuffer.getEventRecord(null);
+		verify(spyBuffer).getEventRecord(null);
 	}
 
 	@Test

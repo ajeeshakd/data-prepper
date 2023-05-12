@@ -35,7 +35,6 @@ import java.util.Map;
 public class KafkaSourceBufferAccumulator<K, V> {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaSourceBufferAccumulator.class);
     private static final String MESSAGE_KEY = "message";
-    private TopicConfig topicConfig;
     private PluginMetrics pluginMetrics;
     private final Counter kafkaConsumerWriteError;
     private static final Long COMMIT_OFFSET_INTERVAL_MILLI_SEC = 300000L;
@@ -45,14 +44,13 @@ public class KafkaSourceBufferAccumulator<K, V> {
 
     private String schemaType;
 
-    public KafkaSourceBufferAccumulator(final TopicConfig topicConfigs, PluginMetrics pluginMetric, final String schemaType) {
-        this.topicConfig = topicConfigs;
+    public KafkaSourceBufferAccumulator(PluginMetrics pluginMetric, final String schemaType) {
         this.pluginMetrics = pluginMetric;
         this.schemaType = schemaType;
         this.kafkaConsumerWriteError = pluginMetrics.counter(KAFKA_CONSUMER_BUFFER_WRITE_ERROR);
     }
 
-    public Record<Object> getEventRecord(final String line, final TopicConfig topicConfig) {
+    public Record<Object> getEventRecord(final String line) {
         Map<String, Object> message = new HashMap<>();
         MessageFormat messageFormat = MessageFormat.getByMessageFormatByName(schemaType);
         if (messageFormat

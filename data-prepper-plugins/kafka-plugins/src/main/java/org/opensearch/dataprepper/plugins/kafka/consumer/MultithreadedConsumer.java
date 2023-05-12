@@ -69,6 +69,7 @@ public class MultithreadedConsumer implements Runnable {
 				case AVRO:
 					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.AVRO).consumeRecords(avroConsumer, status, buffer,
 							topicConfig, pluginMetrics, schemaType);
+					break;
 				case PLAINTEXT:
 				default:
 					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.PLAINTEXT).consumeRecords(plainTextConsumer,

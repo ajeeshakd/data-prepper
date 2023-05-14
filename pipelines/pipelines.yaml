@@ -1,0 +1,30 @@
+log-pipeline:
+  source:
+    kafka:
+      bootstrap_servers:
+        - 127.0.0.1:9093
+        - 127.0.0.1:9094
+        - 127.0.0.1:9095
+      auth_type: plaintext
+      topics:
+        - name: my-topic-2
+          consumer:
+              group_name: kafka-consumer-group-2
+              group_id: DPKafkaProj-2
+              workers: 10 #optional and default is 10
+        - name: my-topic-1
+          consumer:
+              group_name: kafka-consumer-group-1
+              group_id: DPKafkaProj-1
+              workers: 10 #optional and default is 10
+      authentication:
+        sasl_plaintext:
+          username: admin
+          password: admin-secret
+      schema:
+        registry_url: http://localhost:8081/
+        version: 1
+  sink:
+    - stdout:
+    - file:
+        path: d:/op.txt

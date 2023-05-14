@@ -22,7 +22,8 @@ import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
 
 import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
 import org.opensearch.dataprepper.plugins.kafka.consumer.MultithreadedConsumer;
-import org.opensearch.dataprepper.plugins.kafka.deserilaizer.KafkaSourceJsonDeserializer;
+
+import org.opensearch.dataprepper.plugins.kafka.deserializer.KafkaSourceJsonDeserializer;
 import org.opensearch.dataprepper.plugins.kafka.util.AuthenticationType;
 import org.opensearch.dataprepper.plugins.kafka.util.MessageFormat;
 import org.slf4j.Logger;
@@ -198,5 +199,4 @@ public class KafkaSource implements Source<Record<Object>> {
     }
     return schemaType;
   }
-
 }

@@ -62,18 +62,18 @@ public class MultithreadedConsumer implements Runnable {
 		try {
 			MessageFormat schema = MessageFormat.getByMessageFormatByName(schemaType);
 			switch (schema) {
-				case JSON:
-					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.JSON).consumeRecords(jsonConsumer, status, buffer,
-							topicConfig, pluginMetrics, schemaType);
+				case PLAINTEXT:
+					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.PLAINTEXT).consumeRecords(plainTextConsumer,
+							status, buffer, topicConfig, pluginMetrics, schemaType);
 					break;
 				case AVRO:
 					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.AVRO).consumeRecords(avroConsumer, status, buffer,
 							topicConfig, pluginMetrics, schemaType);
 					break;
-				case PLAINTEXT:
+				case JSON:
 				default:
-					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.PLAINTEXT).consumeRecords(plainTextConsumer,
-							status, buffer, topicConfig, pluginMetrics, schemaType);
+					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.JSON).consumeRecords(jsonConsumer, status, buffer,
+							topicConfig, pluginMetrics, schemaType);
 					break;
 			}
 

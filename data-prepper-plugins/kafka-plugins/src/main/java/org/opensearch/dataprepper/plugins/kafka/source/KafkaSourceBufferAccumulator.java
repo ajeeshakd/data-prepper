@@ -23,6 +23,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.opensearch.dataprepper.metrics.PluginMetrics;
 import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.event.Event;
@@ -53,6 +56,7 @@ public class KafkaSourceBufferAccumulator<K, V> {
     private static final String KAFKA_CONSUMER_BUFFER_WRITE_ERROR = "kafkaConsumerBufferWriteError";
     private static final int MAX_FLUSH_RETRIES_ON_IO_EXCEPTION = Integer.MAX_VALUE;
     private static final Duration INITIAL_FLUSH_RETRY_DELAY_ON_IO_EXCEPTION = Duration.ofSeconds(5);
+    private static final Long COMMIT_OFFSET_INTERVAL_MILLI_SEC = 300000L;
     private final JsonFactory jsonFactory = new JsonFactory();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -147,5 +151,22 @@ public class KafkaSourceBufferAccumulator<K, V> {
         LOG.warn("Flushing the bufferAccumulator failed after {} attempts", MAX_FLUSH_RETRIES_ON_IO_EXCEPTION);
         scheduledExecutorService.shutdownNow();
         return false;
+    }
+
+    public long commitOffsets(KafkaConsumer<Object, Object> consumer, long lastCommitTime, Map<TopicPartition, OffsetAndMetadata> offsetsToCommit) {
+        try {
+            long currentTimeMillis = System.currentTimeMillis();
+            if (currentTimeMillis - lastCommitTime > COMMIT_OFFSET_INTERVAL_MILLI_SEC) {
+                if(!offsetsToCommit.isEmpty()) {
+                    consumer.commitSync(offsetsToCommit);
+                    offsetsToCommit.clear();
+                    LOG.info("Succeeded to commit the offsets ...");
+                }
+                lastCommitTime = currentTimeMillis;
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to commit the offsets...", e);
+        }
+        return lastCommitTime;
     }
 }

@@ -7,18 +7,30 @@ package org.opensearch.dataprepper.plugins.kafka.consumer;
 
 
 import org.apache.avro.generic.GenericRecord;
-import org.apache.kafka.clients.consumer.*;
+
+import org.apache.kafka.clients.consumer.CommitFailedException;
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.opensearch.dataprepper.metrics.PluginMetrics;
 import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.record.Record;
-import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
 import org.opensearch.dataprepper.plugins.kafka.source.KafkaSourceBufferAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -36,8 +48,12 @@ public class AvroConsumer implements KafkaSourceSchemaConsumer<String, GenericRe
     private volatile long lastCommitTime = System.currentTimeMillis();
 
     @Override
-    public void consumeRecords(final KafkaConsumer<String, GenericRecord> consumer, final AtomicBoolean status, final Buffer<Record<Object>> buffer, final TopicConfig topicConfig, PluginMetrics pluginMetrics, final String schemaType) {
-        KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator = new KafkaSourceBufferAccumulator(pluginMetrics, schemaType);
+    public void consumeRecords(final KafkaConsumer<String, GenericRecord> consumer, final AtomicBoolean status,
+                               final Buffer<Record<Object>> buffer, final TopicsConfig topicConfig,
+                               final KafkaSourceConfig kafkaSourceConfig, PluginMetrics pluginMetrics,
+                               final String schemaType) {
+        KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator = new KafkaSourceBufferAccumulator(topicConfig,kafkaSourceConfig,
+                schemaType,pluginMetrics);
         kafkaAvroConsumer = consumer;
         try {
             consumer.subscribe(Arrays.asList(topicConfig.getName()));
@@ -58,7 +74,7 @@ public class AvroConsumer implements KafkaSourceSchemaConsumer<String, GenericRe
                             kafkaSourceBufferAccumulator.writeAllRecordToBuffer(kafkaRecords, buffer, topicConfig);
                         }
                     }
-                    if (!offsetsToCommit.isEmpty() && topicConfig.getConsumerGroupConfig().getAutoCommit().equalsIgnoreCase("false")) {
+                    if (!offsetsToCommit.isEmpty() && topicConfig.getAutoCommit().equalsIgnoreCase("false")) {
                         lastCommitTime = kafkaSourceBufferAccumulator.commitOffsets(consumer, lastCommitTime, offsetsToCommit);
                     }
                 }

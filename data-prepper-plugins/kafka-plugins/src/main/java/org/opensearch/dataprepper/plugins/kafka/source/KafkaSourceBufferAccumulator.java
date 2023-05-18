@@ -115,7 +115,7 @@ public class KafkaSourceBufferAccumulator<K, V> {
                 || e instanceof InterruptedException);
     }
 
-    private boolean writeWithBackoff(List<Record<Object>> kafkaRecords, final Buffer<Record<Object>> buffer, final TopicsConfig topicConfig) throws Exception {
+    public boolean writeWithBackoff(List<Record<Object>> kafkaRecords, final Buffer<Record<Object>> buffer, final TopicsConfig topicConfig) throws Exception {
         System.out.println("inside writeWithBackoff");
         final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         long nextDelay = INITIAL_FLUSH_RETRY_DELAY_ON_IO_EXCEPTION.toMillis();

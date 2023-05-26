@@ -5,12 +5,14 @@
 
 package org.opensearch.dataprepper.plugins.kafka.configuration;
 
+import java.util.List;
+
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-
-import java.util.List;
 
 /**
  * * A helper class that helps to read user configuration values from

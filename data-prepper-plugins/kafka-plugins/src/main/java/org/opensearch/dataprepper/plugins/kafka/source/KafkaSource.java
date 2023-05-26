@@ -5,7 +5,15 @@
 
 package org.opensearch.dataprepper.plugins.kafka.source;
 
-import io.micrometer.core.instrument.Counter;
+import java.util.List;
+import java.util.Properties;
+
+import java.util.stream.IntStream;
+import java.util.Comparator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.opensearch.dataprepper.metrics.PluginMetrics;
@@ -14,19 +22,14 @@ import org.opensearch.dataprepper.model.annotations.DataPrepperPluginConstructor
 import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.record.Record;
 import org.opensearch.dataprepper.model.source.Source;
+
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
 import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
 import org.opensearch.dataprepper.plugins.kafka.consumer.MultithreadedConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
+import io.micrometer.core.instrument.Counter;
 
 
 /**
@@ -69,9 +72,13 @@ public class KafkaSource implements Source<Record<Object>> {
                   consumerGroupID, consumerProperties, sourceConfig, buffer, pluginMetrics);
           executorService.submit(multithreadedConsumer);
         });
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         LOG.error("Failed to setup the Kafka Source Plugin.", e);
-        throw new RuntimeException();
+        try {
+          throw new InterruptedException();
+        } catch (InterruptedException ex) {
+          throw new RuntimeException(ex);
+        }
       }
     });
   }

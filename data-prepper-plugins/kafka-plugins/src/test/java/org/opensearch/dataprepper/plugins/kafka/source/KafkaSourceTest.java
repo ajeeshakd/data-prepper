@@ -5,8 +5,6 @@
 
 package org.opensearch.dataprepper.plugins.kafka.source;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -25,13 +23,12 @@ import org.opensearch.dataprepper.plugins.kafka.configuration.SchemaConfig;
 import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
 import org.opensearch.dataprepper.plugins.kafka.consumer.MultithreadedConsumer;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.yaml.snakeyaml.Yaml;
 
-import java.io.FileReader;
-import java.io.Reader;
-import java.io.StringReader;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -50,7 +47,7 @@ class KafkaSourceTest {
     private KafkaSource source;
 
     @Mock
-    private KafkaSourceConfig kafkaSourceConfig;
+    private KafkaSourceConfig sourceConfig;
 
     @Mock
     private PluginMetrics pluginMetrics;
@@ -59,27 +56,27 @@ class KafkaSourceTest {
     private ExecutorService executorService;
 
     @Mock
+    private SchemaConfig schemaConfig;
+
+    @Mock
     private TopicsConfig topicsConfig;
 
+    @Mock
+    List<TopicsConfig> mockList = new ArrayList<TopicsConfig>();
+
+    private static final String AUTO_COMMIT = "false";
     private static final String BOOTSTRAP_SERVERS = "localhost:9092";
+    private static final String AUTO_OFFSET_RESET = "earliest";
+    private static final String GROUP_ID = "Kafka-source";
+    private static final String TOPIC = "my-topic";
+    private static final Integer WORKERS = 3;
 
     @BeforeEach
     void setUp() throws Exception {
-        //Added to load Yaml file - Start
-        Yaml yaml = new Yaml();
-        FileReader fileReader = new FileReader(getClass().getClassLoader().getResource("sample-pipelines.yaml").getFile());
-        Object data = yaml.load(fileReader);
-        if(data instanceof Map){
-            Map<String, Object> propertyMap = (Map<String, Object>) data;
-            Map<String, Object> logPipelineMap = (Map<String, Object>) propertyMap.get("log-pipeline");
-            Map<String, Object> sourceMap = (Map<String, Object>) logPipelineMap.get("source");
-            Map<String, Object> kafkaConfigMap = (Map<String, Object>) sourceMap.get("kafka");
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            String json = mapper.writeValueAsString(kafkaConfigMap);
-            Reader reader = new StringReader(json);
-            kafkaSourceConfig = mapper.readValue(reader, KafkaSourceConfig.class);
-        }
+        when(sourceConfig.getTopics()).thenReturn((mockList));
+        when(mockList.get(0)).thenReturn(topicsConfig);
+        when(sourceConfig.getSchemaConfig()).thenReturn(schemaConfig);
+        when(sourceConfig.getSchemaConfig()).thenReturn(mock(SchemaConfig.class));
     }
 
     @Test
@@ -92,7 +89,7 @@ class KafkaSourceTest {
     @Test
     void test_kafkaSource_stop_execution() throws Exception {
         List<MultithreadedConsumer> consumers = buildKafkaSourceConsumer();
-        source = new KafkaSource(kafkaSourceConfig, pluginMetrics);
+        source = new KafkaSource(sourceConfig, pluginMetrics);
         KafkaSource spySource = spy(source);
         ReflectionTestUtils.setField(spySource, "executorService", executorService);
         doCallRealMethod().when(spySource).stop();
@@ -109,7 +106,7 @@ class KafkaSourceTest {
         MultithreadedConsumer kafkaSourceConsumer = new MultithreadedConsumer(
                 topicsConfig.getGroupId(),
                 topicsConfig.getGroupId(),
-                prop, kafkaSourceConfig, null, pluginMetrics);
+                prop, sourceConfig, null, pluginMetrics);
         consumers.add(kafkaSourceConsumer);
         return consumers;
     }
@@ -117,8 +114,25 @@ class KafkaSourceTest {
 
     @Test
     void test_kafkaSource_start_execution_string_schemaType() throws Exception {
+        List<TopicsConfig> topicsConfigList = new ArrayList<TopicsConfig>();
+        KafkaSourceConfig sourceConfig = new KafkaSourceConfig();
+        TopicsConfig topicsConfig = new TopicsConfig();
+        SchemaConfig schemaConfig = new SchemaConfig();
 
-        source = new KafkaSource(kafkaSourceConfig, pluginMetrics);
+        topicsConfig.setAutoCommitInterval(Duration.ofMillis(1000));
+        topicsConfig.setAutoOffsetReset(AUTO_OFFSET_RESET);
+        topicsConfig.setAutoCommit(AUTO_COMMIT);
+        topicsConfig.setGroupId(GROUP_ID);
+        topicsConfig.setWorkers(WORKERS);
+
+        sourceConfig.setSchemaConfig(schemaConfig);
+        topicsConfig.setName(TOPIC);
+
+        topicsConfigList.add(topicsConfig);
+        sourceConfig.setTopics(topicsConfigList);
+        sourceConfig.setBootStrapServers(Arrays.asList(BOOTSTRAP_SERVERS));
+
+        source = new KafkaSource(sourceConfig, pluginMetrics);
         KafkaSource spySource = spy(source);
         doCallRealMethod().when(spySource).start(any());
         spySource.start(any());
@@ -128,9 +142,27 @@ class KafkaSourceTest {
     @Test
     void test_kafkaSource_start_execution_json_schemaType() throws Exception {
 
-        source = new KafkaSource(kafkaSourceConfig, pluginMetrics);
+        List<TopicsConfig> topicsConfigList = new ArrayList<TopicsConfig>();
+        KafkaSourceConfig sourceConfig = new KafkaSourceConfig();
+        TopicsConfig topicsConfig = new TopicsConfig();
+        SchemaConfig schemaConfig = new SchemaConfig();
+
+        topicsConfig.setAutoCommitInterval(Duration.ofMillis(1000));
+        topicsConfig.setAutoOffsetReset(AUTO_OFFSET_RESET);
+        topicsConfig.setAutoCommit(AUTO_COMMIT);
+        topicsConfig.setGroupId(GROUP_ID);
+        topicsConfig.setWorkers(WORKERS);
+
+        sourceConfig.setSchemaConfig(schemaConfig);
+        topicsConfig.setName(TOPIC);
+
+        topicsConfigList.add(topicsConfig);
+        sourceConfig.setTopics(topicsConfigList);
+
+        sourceConfig.setBootStrapServers(Arrays.asList(BOOTSTRAP_SERVERS));
+        source = new KafkaSource(sourceConfig, pluginMetrics);
         KafkaSource spySource = spy(source);
-        ReflectionTestUtils.setField(spySource, "sourceConfig", kafkaSourceConfig);
+        ReflectionTestUtils.setField(spySource, "sourceConfig", sourceConfig);
         doCallRealMethod().when(spySource).start(any());
         spySource.start(any());
         verify(spySource).start(any());

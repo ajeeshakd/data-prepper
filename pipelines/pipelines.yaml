@@ -1,0 +1,38 @@
+log-pipeline:
+  source:
+    kafka:
+      bootstrap_servers:
+        - 127.0.0.1:9093
+      auth_type: plaintext
+      topics:
+        - name: my-topic-2
+          group_id: DPKafkaProj-2
+          workers: 10
+          autocommit: false
+          autocommit_interval: 5s
+          session_timeout: 45s
+          max_retry_attempts: 1000
+          max_retry_delay: 1s
+          auto_offset_reset: earliest
+          thread_waiting_time: 1s
+          max_record_fetch_time: 4s
+          heart_beat_interval: 3s
+          buffer_default_timeout: 5s
+          fetch_max_bytes: 52428800
+          fetch_max_wait: 500
+          fetch_min_bytes: 1
+          retry_backoff: 100s
+          max_poll_interval: 300000s
+          consumer_max_poll_records: 500
+        - name: my-topic-2
+          group_id: DPKafkaProj-2
+          workers: 10
+      schema:
+        registry_url: http://localhost:8081/
+        version: 1
+      authentication:
+        sasl_plaintext:
+          username: admin
+          password: admin-secret
+  sink:
+    - stdout:

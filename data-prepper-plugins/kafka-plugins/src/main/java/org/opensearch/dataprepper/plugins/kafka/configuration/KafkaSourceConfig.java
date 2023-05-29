@@ -41,6 +41,11 @@ public class KafkaSourceConfig {
   @Valid
   private SchemaConfig schemaConfig;
 
+  @JsonProperty("authentication")
+  @NotNull
+  @Valid
+  private AuthConfig authConfig;
+
     public List<TopicsConfig> getTopics() {
         return topics;
     }
@@ -73,4 +78,11 @@ public class KafkaSourceConfig {
     this.schemaConfig = schemaConfig;
   }
 
+  public AuthConfig getAuthConfig() {
+    return authConfig;
+  }
+
+  public void setAuthConfig(AuthConfig authConfig) {
+    this.authConfig = authConfig;
+  }
 }

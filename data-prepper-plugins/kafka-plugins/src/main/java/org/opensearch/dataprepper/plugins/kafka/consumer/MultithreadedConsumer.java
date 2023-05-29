@@ -71,20 +71,17 @@ public class MultithreadedConsumer implements Runnable {
 	public void run() {
 		LOG.info("Consumer group: {} and Consumer :{} executed on : {}",consumerGroupId, consumerId,  LocalDateTime.now());
 		try {
-			MessageFormat schema = MessageFormat.getByMessageFormatByName(MessageFormat.PLAINTEXT.toString());
+			MessageFormat schema = MessageFormat.getByMessageFormatByName(schemaType);
 			switch(schema){
 				case JSON:
-					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.JSON).consumeRecords(jsonConsumer, status, buffer,
-							topicConfig,sourceConfig, pluginMetrics, schemaType);
+					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.JSON, jsonConsumer, status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
 					break;
 				case AVRO:
-					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.AVRO).consumeRecords(avroConsumer, status, buffer,
-							topicConfig,sourceConfig, pluginMetrics, schemaType);
+					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.AVRO, avroConsumer, status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
 					break;
 				case PLAINTEXT:
 				default:
-					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.PLAINTEXT).consumeRecords(plainTextConsumer,
-							status, buffer, topicConfig, sourceConfig, pluginMetrics, schemaType);
+					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.PLAINTEXT, plainTextConsumer, status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
 					break;
 			}
 

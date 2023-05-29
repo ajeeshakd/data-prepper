@@ -9,10 +9,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.Counter;
-import org.apache.avro.generic.GenericDatumReader;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.io.Decoder;
-import org.apache.avro.io.DecoderFactory;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -74,7 +71,7 @@ public class KafkaSourceBufferAccumulator<K, V> {
     public Record<Object> getEventRecord(final String line) {
         Map<String, Object> message = new HashMap<>();
         MessageFormat format = MessageFormat.getByMessageFormatByName(schemaType);
-       if (format.equals(MessageFormat.JSON)) {
+       if (format.equals(MessageFormat.JSON) || format.equals(MessageFormat.AVRO)) {
             try {
                 final JsonParser jsonParser = jsonFactory.createParser(line);
                 message = objectMapper.readValue(jsonParser, Map.class);
@@ -82,17 +79,7 @@ public class KafkaSourceBufferAccumulator<K, V> {
                 LOG.error("Unable to parse json data [{}]", line, e);
                 message.put(MESSAGE_KEY, line);
             }
-        } else if (format.equals(MessageFormat.AVRO)) {
-           try{
-               Decoder decoder = DecoderFactory.get().binaryDecoder(line.getBytes(), null);
-               GenericDatumReader<GenericRecord> reader = new GenericDatumReader<>();
-               message = (Map<String, Object>) reader.read(null, decoder);
-           }
-           catch (Exception e){
-               LOG.error("Unable to parse avro data [{}], assuming plain text", line, e);
-               message.put(MESSAGE_KEY, line);
-           }
-       } else{
+        } else{
             message.put(MESSAGE_KEY, line);
         }
         Event event = JacksonLog.builder().withData(message).build();
@@ -174,5 +161,15 @@ public class KafkaSourceBufferAccumulator<K, V> {
             LOG.error("Failed to commit the offsets...", e);
         }
         return lastCommitTime;
+    }
+
+    public long processConsumerRecords(Map<TopicPartition, OffsetAndMetadata> offsetsToCommit,
+                                       List<Record<Object>> kafkaRecords,
+                                       long lastReadOffset, ConsumerRecord<String, String> consumerRecord, List<ConsumerRecord<String, String>> partitionRecords) {
+        offsetsToCommit.put(new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
+                    new OffsetAndMetadata(consumerRecord.offset() + 1, null));
+        kafkaRecords.add(getEventRecord(consumerRecord.value()));
+        lastReadOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
+        return lastReadOffset;
     }
 }

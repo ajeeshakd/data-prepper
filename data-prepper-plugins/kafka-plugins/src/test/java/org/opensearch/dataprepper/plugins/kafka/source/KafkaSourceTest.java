@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.opensearch.dataprepper.metrics.PluginMetrics;
 
+import org.opensearch.dataprepper.model.configuration.PipelineDescription;
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
 import org.opensearch.dataprepper.plugins.kafka.configuration.SchemaConfig;
 import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
@@ -60,6 +61,8 @@ class KafkaSourceTest {
 
     @Mock
     private TopicsConfig topicsConfig;
+    @Mock
+    private PipelineDescription pipelineDescription;
 
     @Mock
     List<TopicsConfig> mockList = new ArrayList<TopicsConfig>();
@@ -81,7 +84,7 @@ class KafkaSourceTest {
 
     @Test
     void test_kafkaSource_start_execution_catch_block() {
-        source = new KafkaSource(null, pluginMetrics,null);
+        source = new KafkaSource(null, pluginMetrics, pipelineDescription);
         KafkaSource spySource = spy(source);
         Assertions.assertThrows(Exception.class, () -> spySource.start(any()));
     }
@@ -89,7 +92,7 @@ class KafkaSourceTest {
     @Test
     void test_kafkaSource_stop_execution() throws Exception {
         List<MultithreadedConsumer> consumers = buildKafkaSourceConsumer();
-        source = new KafkaSource(sourceConfig, pluginMetrics,null);
+        source = new KafkaSource(sourceConfig, pluginMetrics,pipelineDescription);
         KafkaSource spySource = spy(source);
         ReflectionTestUtils.setField(spySource, "executorService", executorService);
         doCallRealMethod().when(spySource).stop();
@@ -132,7 +135,7 @@ class KafkaSourceTest {
         sourceConfig.setTopics(topicsConfigList);
         sourceConfig.setBootStrapServers(Arrays.asList(BOOTSTRAP_SERVERS));
 
-        source = new KafkaSource(sourceConfig, pluginMetrics,null);
+        source = new KafkaSource(sourceConfig, pluginMetrics, pipelineDescription);
         KafkaSource spySource = spy(source);
         doCallRealMethod().when(spySource).start(any());
         spySource.start(any());
@@ -160,7 +163,7 @@ class KafkaSourceTest {
         sourceConfig.setTopics(topicsConfigList);
 
         sourceConfig.setBootStrapServers(Arrays.asList(BOOTSTRAP_SERVERS));
-        source = new KafkaSource(sourceConfig, pluginMetrics, null);
+        source = new KafkaSource(sourceConfig, pluginMetrics, pipelineDescription);
         KafkaSource spySource = spy(source);
         ReflectionTestUtils.setField(spySource, "sourceConfig", sourceConfig);
         doCallRealMethod().when(spySource).start(any());

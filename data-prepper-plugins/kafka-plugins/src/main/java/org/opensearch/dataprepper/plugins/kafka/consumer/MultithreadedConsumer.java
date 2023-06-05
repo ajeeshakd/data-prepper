@@ -69,19 +69,19 @@ public class MultithreadedConsumer implements Runnable {
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public void run() {
-		LOG.info("Consumer group: {} and Consumer :{} executed on : {}",consumerGroupId, consumerId,  LocalDateTime.now());
+		LOG.info("Consumer group : {} and Consumer : {} executed on : {}",consumerGroupId, consumerId,  LocalDateTime.now());
 		try {
 			MessageFormat schema = MessageFormat.getByMessageFormatByName(schemaType);
 			switch(schema){
 				case JSON:
-					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.JSON, jsonConsumer, status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
+					KafkaSourceSchemaFactory.createConsumer(MessageFormat.JSON, jsonConsumer, status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
 					break;
 				case AVRO:
-					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.AVRO, avroConsumer, status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
+					KafkaSourceSchemaFactory.createConsumer(MessageFormat.AVRO, avroConsumer, status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
 					break;
 				case PLAINTEXT:
 				default:
-					KafkaSourceSchemaFactory.getSchemaType(MessageFormat.PLAINTEXT, plainTextConsumer, status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
+					KafkaSourceSchemaFactory.createConsumer(MessageFormat.PLAINTEXT, plainTextConsumer, status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
 					break;
 			}
 

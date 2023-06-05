@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 
 @SuppressWarnings("deprecation")
-public class AvroConsumer implements KafkaSourceSchemaConsumer<String, GenericRecord>, ConsumerRebalanceListener {
+public class AvroConsumer implements KafkaSourceConsumer<String, GenericRecord>, ConsumerRebalanceListener {
     private static final Logger LOG = LoggerFactory.getLogger(AvroConsumer.class);
     private Map<TopicPartition, OffsetAndMetadata> offsetsToCommit = new HashMap<>();
     private long lastReadOffset = 0L;
@@ -117,7 +117,6 @@ public class AvroConsumer implements KafkaSourceSchemaConsumer<String, GenericRe
 
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
-        LOG.trace("onPartitionsAssigned() callback triggered and Closing the consumer...");
         for (TopicPartition partition : partitions) {
             kafkaAvroConsumer.seek(partition, lastReadOffset);
         }

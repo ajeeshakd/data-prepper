@@ -79,8 +79,8 @@ public class KafkaSource implements Source<Record<Object>> {
                 totalWorkers = topic.getWorkers();
                 consumerGroupID = getGroupId(topic.getName());
                 executorService = Executors.newFixedThreadPool(totalWorkers);
-                IntStream.range(0, totalWorkers).forEach(index -> {
-                    String consumerId = consumerGroupID + " :: " + topic + " :: " + Integer.toString(index + 1);
+                IntStream.range(0, totalWorkers+1).forEach(index -> {
+                    String consumerId = consumerGroupID + "::" + Integer.toString(index + 1);
                     multithreadedConsumer = new MultithreadedConsumer(consumerId,
                             consumerGroupID, consumerProperties, topic, sourceConfig, buffer, pluginMetrics, schemaType);
                     executorService.submit(multithreadedConsumer);
@@ -113,7 +113,7 @@ public class KafkaSource implements Source<Record<Object>> {
     }
 
     private String getGroupId(String name) {
-        return  pipelineName + name;
+        return  pipelineName +"::"+ name;
     }
     private long calculateLongestThreadWaitingTime() {
         List<TopicsConfig> topicsList = sourceConfig.getTopics();
@@ -140,7 +140,7 @@ public class KafkaSource implements Source<Record<Object>> {
             schemaType = MessageFormat.PLAINTEXT.toString();
         }
         setPropertiesForSchemaType(properties, schemaType);
-        if (sourceConfig.getAuthType().equalsIgnoreCase(AuthenticationType.PLAINTEXT.toString())) {
+        if (sourceConfig.getAuthType()!=null && sourceConfig.getAuthType().equalsIgnoreCase(AuthenticationType.PLAINTEXT.toString())) {
             setPropertiesForAuth(properties);
         }
         return properties;
@@ -173,6 +173,15 @@ public class KafkaSource implements Source<Record<Object>> {
         properties.put("security.protocol", "SASL_PLAINTEXT");
     }
 
+    private void setPropertiesForOAuth(Properties properties) {
+        String username = sourceConfig.getAuthConfig().getPlainTextAuthConfig().getUsername();
+        String password = sourceConfig.getAuthConfig().getPlainTextAuthConfig().getPassword();
+        properties.put("sasl.mechanism", "OAUTHBEARER");
+        properties.put("security.protocol", "SASL_PLAINTEXT");
+
+        properties.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + username + "\" password=\"" + password + "\";");
+
+    }
     private static String getSchemaType(final String registryUrl, final String topicName, final int schemaVersion) {
         StringBuilder response = new StringBuilder();
         try {

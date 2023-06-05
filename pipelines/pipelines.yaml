@@ -34,5 +34,16 @@ log-pipeline:
         sasl_plaintext:
           username: admin
           password: admin-secret
+        sasl_oauth:
+          oauth_login_server: dev-75552796.okta.com
+          oauth_login_endpoint: /oauth2/default/v1/token
+          oauth_login_grant_type: client_credentials
+          oauth_login_scope: kafka
+          oauth_authorization_token: MG9hOWRrMTdqelVtczZCUzg1ZDc6Ql9GNGF6VFpoVFNpeWlRdUR1cC1sb24tQU9kdnFUNmNNQTVDdm5vaw==
+          oauth_introspect_server: dev-75552796.okta.com
+          oauth_introspect_endpoint: /oauth2/default/v1/introspect
+          oauth_introspect_authorization_token: MG9hOWRrMTdqelVtczZCUzg1ZDc6Ql9GNGF6VFpoVFNpeWlRdUR1cC1sb24tQU9kdnFUNmNNQTVDdm5vaw==
+
+
   sink:
     - stdout:

@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 
 @SuppressWarnings("deprecation")
-public class PlainTextConsumer implements KafkaSourceSchemaConsumer<String, String>, ConsumerRebalanceListener {
+public class PlainTextConsumer implements KafkaSourceConsumer<String, String>, ConsumerRebalanceListener {
     private static final Logger LOG = LoggerFactory.getLogger(PlainTextConsumer.class);
     private Map<TopicPartition, OffsetAndMetadata> offsetsToCommit = new HashMap<>();
     private long lastReadOffset = 0L;
@@ -116,7 +116,6 @@ public class PlainTextConsumer implements KafkaSourceSchemaConsumer<String, Stri
 
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
-        LOG.trace("onPartitionsAssigned() callback triggered and Closing the consumer...");
         for (TopicPartition partition : partitions) {
             plainTxtConsumer.seek(partition, lastReadOffset);
         }

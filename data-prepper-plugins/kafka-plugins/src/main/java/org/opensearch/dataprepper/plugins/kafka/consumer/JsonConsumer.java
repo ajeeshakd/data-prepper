@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 
 @SuppressWarnings("deprecation")
-public class JsonConsumer implements KafkaSourceSchemaConsumer<String, JsonNode>, ConsumerRebalanceListener {
+public class JsonConsumer implements KafkaSourceConsumer<String, JsonNode>, ConsumerRebalanceListener {
     private static final Logger LOG = LoggerFactory.getLogger(JsonConsumer.class);
     private Map<TopicPartition, OffsetAndMetadata> offsetsToCommit = new HashMap<>();
     private KafkaConsumer<String, JsonNode> kafkaJsonConsumer;
@@ -113,7 +113,6 @@ public class JsonConsumer implements KafkaSourceSchemaConsumer<String, JsonNode>
 
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
-        LOG.trace("onPartitionsAssigned() callback triggered and Closing the Json consumer...");
         for (TopicPartition partition : partitions) {
             kafkaJsonConsumer.seek(partition, lastReadOffset);
         }

@@ -12,7 +12,7 @@ package org.opensearch.dataprepper.plugins.kafka.consumer;
  * avro or json or plain text consumer dynamically.
  */
 @SuppressWarnings("deprecation")
-public interface KafkaSourceSchemaConsumer<K, V> {
+public interface KafkaSourceConsumer<K, V> {
 
   public void consumeRecords();
 }

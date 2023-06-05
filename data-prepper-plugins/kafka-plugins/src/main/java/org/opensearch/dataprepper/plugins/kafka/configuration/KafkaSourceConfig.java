@@ -32,18 +32,17 @@ public class KafkaSourceConfig {
     private List<TopicsConfig> topics;
 
   @JsonProperty("auth_type")
-  @NotNull
-  @Valid
+  //@NotNull
+  //@Valid
   private String authType;
 
   @JsonProperty("schema")
-  @NotNull
+  //@NotNull
   @Valid
   private SchemaConfig schemaConfig;
 
   @JsonProperty("authentication")
-  @NotNull
-  @Valid
+ // @Valid
   private AuthConfig authConfig;
 
     public List<TopicsConfig> getTopics() {

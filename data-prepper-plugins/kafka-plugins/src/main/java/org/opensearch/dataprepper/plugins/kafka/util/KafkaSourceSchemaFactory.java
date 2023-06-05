@@ -13,7 +13,7 @@ import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
 import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
 import org.opensearch.dataprepper.plugins.kafka.consumer.AvroConsumer;
 import org.opensearch.dataprepper.plugins.kafka.consumer.JsonConsumer;
-import org.opensearch.dataprepper.plugins.kafka.consumer.KafkaSourceSchemaConsumer;
+import org.opensearch.dataprepper.plugins.kafka.consumer.KafkaSourceConsumer;
 import org.opensearch.dataprepper.plugins.kafka.consumer.PlainTextConsumer;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,14 +27,14 @@ public class KafkaSourceSchemaFactory {
   }
 
   @SuppressWarnings("rawtypes")
-  public static KafkaSourceSchemaConsumer getSchemaType(MessageFormat format,
-                                                        KafkaConsumer consumer,
-                                                        AtomicBoolean status,
-                                                        Buffer<Record<Object>> buffer,
-                                                        TopicsConfig topicConfig,
-                                                        KafkaSourceConfig kafkaSourceConfig,
-                                                        String schemaType,
-                                                        PluginMetrics pluginMetrics) {
+  public static KafkaSourceConsumer createConsumer(MessageFormat format,
+                                                  KafkaConsumer consumer,
+                                                  AtomicBoolean status,
+                                                  Buffer<Record<Object>> buffer,
+                                                  TopicsConfig topicConfig,
+                                                  KafkaSourceConfig kafkaSourceConfig,
+                                                  String schemaType,
+                                                  PluginMetrics pluginMetrics) {
     switch (format) {
       case JSON:
         return new JsonConsumer(consumer, status, buffer, topicConfig, kafkaSourceConfig, schemaType, pluginMetrics);

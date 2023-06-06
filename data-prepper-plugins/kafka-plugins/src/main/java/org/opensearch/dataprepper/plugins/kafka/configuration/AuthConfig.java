@@ -16,6 +16,17 @@ public class AuthConfig {
     @JsonProperty("sasl_plaintext")
     private PlainTextAuthConfig plainTextAuthConfig;
 
+    @JsonProperty("sasl_oauth")
+    private OAuthConfig authConfig;
+
+    public OAuthConfig getAuthConfig() {
+        return authConfig;
+    }
+
+    public void setAuthConfig(OAuthConfig authConfig) {
+        this.authConfig = authConfig;
+    }
+
     public PlainTextAuthConfig getPlainTextAuthConfig() {
         return plainTextAuthConfig;
     }

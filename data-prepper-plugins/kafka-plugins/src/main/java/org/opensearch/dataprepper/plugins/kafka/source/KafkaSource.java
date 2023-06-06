@@ -139,10 +139,11 @@ public class KafkaSource implements Source<Record<Object>> {
         if (schemaType.isEmpty()) {
             schemaType = MessageFormat.PLAINTEXT.toString();
         }
-        setPropertiesForSchemaType(properties, schemaType);
-        if (sourceConfig.getAuthType()!=null && sourceConfig.getAuthType().equalsIgnoreCase(AuthenticationType.PLAINTEXT.toString())) {
+       setPropertiesForSchemaType(properties, schemaType);
+       if (sourceConfig.getAuthType()!=null && sourceConfig.getAuthType().equalsIgnoreCase(AuthenticationType.PLAINTEXT.toString())) {
             setPropertiesForAuth(properties);
-        }
+       }
+        setPropertiesForOAuth(properties);
         return properties;
     }
 
@@ -174,14 +175,21 @@ public class KafkaSource implements Source<Record<Object>> {
     }
 
     private void setPropertiesForOAuth(Properties properties) {
-        String username = sourceConfig.getAuthConfig().getPlainTextAuthConfig().getUsername();
-        String password = sourceConfig.getAuthConfig().getPlainTextAuthConfig().getPassword();
+
+       // String username = sourceConfig.getAuthConfig().getPlainTextAuthConfig().getUsername();
+
+       // String password = sourceConfig.getAuthConfig().getPlainTextAuthConfig().getPassword();
+
         properties.put("sasl.mechanism", "OAUTHBEARER");
+
         properties.put("security.protocol", "SASL_PLAINTEXT");
 
-        properties.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + username + "\" password=\"" + password + "\";");
+        properties.put("sasl.login.callback.handler.class","org.opensearch.dataprepper.plugins.kafka.oauth.OAuthAuthenticateLoginCallbackHandler");
+
+        properties.put("sasl.jaas.config", "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required OAUTH_LOGIN_SERVER=dev-75552796.okta.com OAUTH_LOGIN_ENDPOINT='/oauth2/default/v1/token' OAUTH_LOGIN_GRANT_TYPE=client_credentials OAUTH_LOGIN_SCOPE=kafka OAUTH_AUTHORIZATION='Basic MG9hOWRrMTdqelVtczZCUzg1ZDc6Ql9GNGF6VFpoVFNpeWlRdUR1cC1sb24tQU9kdnFUNmNNQTVDdm5vaw==' OAUTH_INTROSPECT_SERVER=dev-75552796.okta.com OAUTH_INTROSPECT_ENDPOINT='/oauth2/default/v1/introspect' OAUTH_INTROSPECT_AUTHORIZATION='Basic MG9hOWRrMTdqelVtczZCUzg1ZDc6Ql9GNGF6VFpoVFNpeWlRdUR1cC1sb24tQU9kdnFUNmNNQTVDdm5vaw==';");
 
     }
+
     private static String getSchemaType(final String registryUrl, final String topicName, final int schemaVersion) {
         StringBuilder response = new StringBuilder();
         try {

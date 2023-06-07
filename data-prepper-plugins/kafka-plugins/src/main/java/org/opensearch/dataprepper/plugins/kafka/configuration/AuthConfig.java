@@ -17,14 +17,14 @@ public class AuthConfig {
     private PlainTextAuthConfig plainTextAuthConfig;
 
     @JsonProperty("sasl_oauth")
-    private OAuthConfig authConfig;
+    private OAuthConfig oAuthConfig;
 
-    public OAuthConfig getAuthConfig() {
-        return authConfig;
+    public OAuthConfig getoAuthConfig() {
+        return oAuthConfig;
     }
 
-    public void setAuthConfig(OAuthConfig authConfig) {
-        this.authConfig = authConfig;
+    public void setoAuthConfig(OAuthConfig oAuthConfig) {
+        this.oAuthConfig = oAuthConfig;
     }
 
     public PlainTextAuthConfig getPlainTextAuthConfig() {

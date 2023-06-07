@@ -18,7 +18,7 @@ import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.record.Record;
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
 import org.opensearch.dataprepper.plugins.kafka.configuration.SchemaConfig;
-import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -44,12 +44,12 @@ class KafkaSourceBufferAccumulatorTest {
 	private KafkaSourceConfig sourceConfig;
 	
 	@Mock
-	private TopicsConfig topicsConfig;
+	private TopicConfig topicConfig;
 	@Mock
 	private KafkaConsumer<Object, Object> kafkaConsumer;
 	
 	@Mock
-	List<TopicsConfig> mockList = new ArrayList<TopicsConfig>();
+	List<TopicConfig> mockList = new ArrayList<TopicConfig>();
 	@Mock
 	private SchemaConfig schemaConfig;
 	
@@ -65,12 +65,12 @@ class KafkaSourceBufferAccumulatorTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		when(sourceConfig.getTopics()).thenReturn((mockList));
-		when(mockList.get(0)).thenReturn(topicsConfig);
+		when(mockList.get(0)).thenReturn(topicConfig);
 		when(sourceConfig.getSchemaConfig()).thenReturn(schemaConfig);
 
 		when(sourceConfig.getSchemaConfig()).thenReturn(mock(SchemaConfig.class));
 
-		buffer = new KafkaSourceBufferAccumulator<>(topicsConfig, sourceConfig, "plaintext", pluginMetrics);
+		buffer = new KafkaSourceBufferAccumulator<>(topicConfig, sourceConfig, "plaintext", pluginMetrics);
 	}
 
 	@Test
@@ -120,7 +120,7 @@ class KafkaSourceBufferAccumulatorTest {
 
 	@Test
 	void testwrite()throws Exception{
-		TopicsConfig topicConfig = new TopicsConfig();
+		TopicConfig topicConfig = new TopicConfig();
 		SchemaConfig schemaConfig = new SchemaConfig();
 		topicConfig.setBufferDefaultTimeout(Duration.ofMillis(100));
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
@@ -131,26 +131,26 @@ class KafkaSourceBufferAccumulatorTest {
 
 	private void createObjectWithSchemaType(String schema){
 
-		topicsConfig = new TopicsConfig();
+		topicConfig = new TopicConfig();
 		schemaConfig = new SchemaConfig();
-		topicsConfig.setBufferDefaultTimeout(Duration.ofMillis(100));
+		topicConfig.setBufferDefaultTimeout(Duration.ofMillis(100));
 		sourceConfig.setSchemaConfig(schemaConfig);
 	}
 
 	@Test
 	void testwriteWithBackoff() throws Exception {
-		TopicsConfig topicConfig = new TopicsConfig();
+		TopicConfig topicConfig = new TopicConfig();
 		Buffer<Record<Object>> bufferObj = mock(Buffer.class);
 		topicConfig.setBufferDefaultTimeout(Duration.ofMillis(100));
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
-		doCallRealMethod().when(spyBuffer).writeWithBackoff(kafkaRecords, bufferObj, topicsConfig);
-		spyBuffer.writeWithBackoff(kafkaRecords, bufferObj, topicsConfig);
-		verify(spyBuffer).writeWithBackoff(kafkaRecords, bufferObj, topicsConfig);
+		doCallRealMethod().when(spyBuffer).writeWithBackoff(kafkaRecords, bufferObj, this.topicConfig);
+		spyBuffer.writeWithBackoff(kafkaRecords, bufferObj, this.topicConfig);
+		verify(spyBuffer).writeWithBackoff(kafkaRecords, bufferObj, this.topicConfig);
 	}
 
 	@Test
 	void testPublishRecordToBuffer_commitOffsets() throws Exception {
-		topicsConfig = new TopicsConfig();
+		topicConfig = new TopicConfig();
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
 		doCallRealMethod().when(spyBuffer).commitOffsets(kafkaConsumer, 0L, null);
 		spyBuffer.commitOffsets(kafkaConsumer, 0L, null);

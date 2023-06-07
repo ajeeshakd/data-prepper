@@ -13,7 +13,7 @@ import org.opensearch.dataprepper.metrics.PluginMetrics;
 import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.record.Record;
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
-import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
 import org.opensearch.dataprepper.plugins.kafka.util.KafkaSourceSchemaFactory;
 import org.opensearch.dataprepper.plugins.kafka.util.MessageFormat;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class MultithreadedConsumer implements Runnable {
 	private static final Logger LOG = LoggerFactory.getLogger(MultithreadedConsumer.class);
 	private final AtomicBoolean status = new AtomicBoolean(false);
 	private final KafkaSourceConfig sourceConfig;
-	private final TopicsConfig topicConfig;
+	private final TopicConfig topicConfig;
 	private final Buffer<Record<Object>> buffer;
 	private String consumerId;
 	private String consumerGroupId;
@@ -47,7 +47,7 @@ public class MultithreadedConsumer implements Runnable {
 	public MultithreadedConsumer(String consumerId,
 								 String consumerGroupId,
 								 Properties properties,
-								 TopicsConfig topicConfig,
+								 TopicConfig topicConfig,
 								 KafkaSourceConfig sourceConfig,
 								 Buffer<Record<Object>> buffer,
 								 PluginMetrics pluginMetric,

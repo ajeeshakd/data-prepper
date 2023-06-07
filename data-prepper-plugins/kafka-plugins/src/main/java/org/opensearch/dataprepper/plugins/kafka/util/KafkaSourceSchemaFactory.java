@@ -10,7 +10,7 @@ import org.opensearch.dataprepper.metrics.PluginMetrics;
 import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.record.Record;
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
-import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
 import org.opensearch.dataprepper.plugins.kafka.consumer.AvroConsumer;
 import org.opensearch.dataprepper.plugins.kafka.consumer.JsonConsumer;
 import org.opensearch.dataprepper.plugins.kafka.consumer.KafkaSourceConsumer;
@@ -31,7 +31,7 @@ public class KafkaSourceSchemaFactory {
                                                   KafkaConsumer consumer,
                                                   AtomicBoolean status,
                                                   Buffer<Record<Object>> buffer,
-                                                  TopicsConfig topicConfig,
+                                                  TopicConfig topicConfig,
                                                   KafkaSourceConfig kafkaSourceConfig,
                                                   String schemaType,
                                                   PluginMetrics pluginMetrics) {

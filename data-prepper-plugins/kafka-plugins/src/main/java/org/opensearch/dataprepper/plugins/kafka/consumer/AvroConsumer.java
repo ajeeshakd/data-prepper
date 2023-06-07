@@ -18,7 +18,7 @@ import org.opensearch.dataprepper.metrics.PluginMetrics;
 import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.record.Record;
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
-import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
 import org.opensearch.dataprepper.plugins.kafka.source.KafkaSourceBufferAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public class AvroConsumer implements KafkaSourceConsumer<String, GenericRecord>,
     final KafkaConsumer<String, GenericRecord> consumer;
     final AtomicBoolean status;
     final Buffer<Record<Object>> buffer;
-    final TopicsConfig topicConfig;
+    final TopicConfig topicConfig;
     final KafkaSourceConfig kafkaSourceConfig;
     PluginMetrics pluginMetrics;
     final String schemaType;
@@ -56,7 +56,7 @@ public class AvroConsumer implements KafkaSourceConsumer<String, GenericRecord>,
     public AvroConsumer(KafkaConsumer<String, GenericRecord> consumer,
                         AtomicBoolean status,
                         Buffer<Record<Object>> buffer,
-                        TopicsConfig topicConfig,
+                        TopicConfig topicConfig,
                         KafkaSourceConfig kafkaSourceConfig,
                         String schemaType,
                         PluginMetrics pluginMetrics) {

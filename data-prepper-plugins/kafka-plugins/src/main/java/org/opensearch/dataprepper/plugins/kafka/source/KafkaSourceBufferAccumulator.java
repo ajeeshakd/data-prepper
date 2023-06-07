@@ -19,7 +19,7 @@ import org.opensearch.dataprepper.model.event.Event;
 import org.opensearch.dataprepper.model.log.JacksonLog;
 import org.opensearch.dataprepper.model.record.Record;
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
-import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
 import org.opensearch.dataprepper.plugins.kafka.util.MessageFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class KafkaSourceBufferAccumulator<K, V> {
 
     private static final Logger LOG = LoggerFactory.getLogger(KafkaSourceBufferAccumulator.class);
     private static final String MESSAGE_KEY = "message";
-    private final TopicsConfig topicConfig;
+    private final TopicConfig topicConfig;
     private final KafkaSourceConfig kafkaSourceConfig;
     private final String schemaType;
     private PluginMetrics pluginMetrics;
@@ -58,7 +58,7 @@ public class KafkaSourceBufferAccumulator<K, V> {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final Long COMMIT_OFFSET_INTERVAL_MILLI_SEC = 300000L;
 
-    public KafkaSourceBufferAccumulator(final TopicsConfig topicConfigs,
+    public KafkaSourceBufferAccumulator(final TopicConfig topicConfigs,
                                         final KafkaSourceConfig kafkaSourceConfig,
                                         final String schemaType, PluginMetrics pluginMetric) {
         this.kafkaSourceConfig = kafkaSourceConfig;
@@ -99,7 +99,7 @@ public class KafkaSourceBufferAccumulator<K, V> {
         }
     }
 
-    public synchronized void writeAllRecordToBuffer(List<Record<Object>> kafkaRecords, final Buffer<Record<Object>> buffer, final TopicsConfig topicConfig) throws Exception {
+    public synchronized void writeAllRecordToBuffer(List<Record<Object>> kafkaRecords, final Buffer<Record<Object>> buffer, final TopicConfig topicConfig) throws Exception {
         buffer.writeAll(kafkaRecords,
                 topicConfig.getBufferDefaultTimeout().toSecondsPart());
     }
@@ -109,7 +109,7 @@ public class KafkaSourceBufferAccumulator<K, V> {
                 || e instanceof InterruptedException);
     }
 
-    public boolean writeWithBackoff(List<Record<Object>> kafkaRecords, final Buffer<Record<Object>> buffer, final TopicsConfig topicConfig) throws Exception {
+    public boolean writeWithBackoff(List<Record<Object>> kafkaRecords, final Buffer<Record<Object>> buffer, final TopicConfig topicConfig) throws Exception {
         final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         long nextDelay = INITIAL_FLUSH_RETRY_DELAY_ON_IO_EXCEPTION.toMillis();
         boolean flushedSuccessfully;

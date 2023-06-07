@@ -19,7 +19,7 @@ import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.record.Record;
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
 import org.opensearch.dataprepper.plugins.kafka.configuration.SchemaConfig;
-import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
@@ -54,10 +54,10 @@ class AvroConsumerTest {
 	private KafkaSourceConfig sourceConfig;
 	
 	@Mock
-	private TopicsConfig topicsConfig;
+	private TopicConfig topicConfig;
 	
 	@Mock
-	List<TopicsConfig> mockList = new ArrayList<TopicsConfig>();
+	List<TopicConfig> mockList = new ArrayList<TopicConfig>();
 
 
 	@Mock
@@ -70,8 +70,8 @@ class AvroConsumerTest {
 	void setUp() throws Exception {
 
 		when(sourceConfig.getTopics()).thenReturn((mockList));
-		when(mockList.get(0)).thenReturn(topicsConfig);
-		avroConsumer = new AvroConsumer(kafkaAvroConsumer, status, buffer, topicsConfig,
+		when(mockList.get(0)).thenReturn(topicConfig);
+		avroConsumer = new AvroConsumer(kafkaAvroConsumer, status, buffer, topicConfig,
 				sourceConfig, "avro", pluginMetrics);
 		/*when(topicsConfig.getTopic()).thenReturn(topicConfig);
 		when(topicConfig.getConsumerGroupConfig()).thenReturn(mock(ConsumerConfigs.class));

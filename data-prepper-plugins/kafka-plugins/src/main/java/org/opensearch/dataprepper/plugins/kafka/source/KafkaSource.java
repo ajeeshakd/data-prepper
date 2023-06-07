@@ -7,8 +7,8 @@ package org.opensearch.dataprepper.plugins.kafka.source;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+//import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
+//import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.micrometer.core.instrument.Counter;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -20,9 +20,9 @@ import org.opensearch.dataprepper.model.configuration.PipelineDescription;
 import org.opensearch.dataprepper.model.record.Record;
 import org.opensearch.dataprepper.model.source.Source;
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
-import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
+//import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
 import org.opensearch.dataprepper.plugins.kafka.consumer.MultithreadedConsumer;
-import org.opensearch.dataprepper.plugins.kafka.util.AuthenticationType;
 import org.opensearch.dataprepper.plugins.kafka.util.KafkaSourceJsonDeserializer;
 import org.opensearch.dataprepper.plugins.kafka.util.MessageFormat;
 import org.slf4j.Logger;
@@ -116,7 +116,7 @@ public class KafkaSource implements Source<Record<Object>> {
         return  pipelineName +"::"+ name;
     }
     private long calculateLongestThreadWaitingTime() {
-        List<TopicsConfig> topicsList = sourceConfig.getTopics();
+        List<TopicConfig> topicsList = sourceConfig.getTopics();
         return topicsList.stream().
                 map(
                         topics -> topics.getThreadWaitingTime().toSeconds()
@@ -125,7 +125,7 @@ public class KafkaSource implements Source<Record<Object>> {
                 orElse(1L);
     }
 
-    private Properties getConsumerProperties(TopicsConfig topicConfig) {
+    private Properties getConsumerProperties(TopicConfig topicConfig) {
         Properties properties = new Properties();
         properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG,
                 topicConfig.getAutoCommitInterval().toSecondsPart());
@@ -135,14 +135,14 @@ public class KafkaSource implements Source<Record<Object>> {
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,
                 topicConfig.getAutoCommit());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, topicConfig.getGroupId());
-        schemaType = getSchemaType(sourceConfig.getSchemaConfig().getRegistryURL(), topicConfig.getName(), sourceConfig.getSchemaConfig().getVersion());
-        if (schemaType.isEmpty()) {
-            schemaType = MessageFormat.PLAINTEXT.toString();
-        }
-       setPropertiesForSchemaType(properties, schemaType);
-       if (sourceConfig.getAuthType()!=null && sourceConfig.getAuthType().equalsIgnoreCase(AuthenticationType.PLAINTEXT.toString())) {
-            setPropertiesForAuth(properties);
-       }
+        // schemaType = getSchemaType(sourceConfig.getSchemaConfig().getRegistryURL(), topicConfig.getName(), sourceConfig.getSchemaConfig().getVersion());
+        // if (schemaType.isEmpty()) {
+        schemaType = MessageFormat.PLAINTEXT.toString();
+        //}
+        setPropertiesForSchemaType(properties, schemaType);
+        //if (sourceConfig.getAuthType()!=null && sourceConfig.getAuthType().equalsIgnoreCase(AuthenticationType.PLAINTEXT.toString())) {
+        //     setPropertiesForAuth(properties);
+        //}
         setPropertiesForOAuth(properties);
         return properties;
     }
@@ -160,9 +160,9 @@ public class KafkaSource implements Source<Record<Object>> {
         } else if (schemaType.equalsIgnoreCase(MessageFormat.AVRO.toString())) {
             properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
                     StringDeserializer.class);
-            properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                    KafkaAvroDeserializer.class);
-            properties.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, sourceConfig.getSchemaConfig().getRegistryURL());
+            // properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+            //        KafkaAvroDeserializer.class);
+            //properties.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, sourceConfig.getSchemaConfig().getRegistryURL());
         }
     }
 
@@ -175,18 +175,27 @@ public class KafkaSource implements Source<Record<Object>> {
     }
 
     private void setPropertiesForOAuth(Properties properties) {
-
-       // String username = sourceConfig.getAuthConfig().getPlainTextAuthConfig().getUsername();
-
-       // String password = sourceConfig.getAuthConfig().getPlainTextAuthConfig().getPassword();
+        /*String oauthLoginServer= "dev-75552796.okta.com";
+        String oauthLoginEndpoint= "/oauth2/default/v1/token";
+        String oauthLoginGrantType= "client_credentials";
+        String oauthLoginScope= "kafka";
+        String oauthAuthorizationToken= "MG9hOWRrMTdqelVtczZCUzg1ZDc6Ql9GNGF6VFpoVFNpeWlRdUR1cC1sb24tQU9kdnFUNmNNQTVDdm5vaw== oauth_introspect_server: dev-75552796.okta.com";
+        String oauthIntrospectEndpoint= "/oauth2/default/v1/introspect";
+        String oauthIntrospectAuthorizationToken= "MG9hOWRrMTdqelVtczZCUzg1ZDc6Ql9GNGF6VFpoVFNpeWlRdUR1cC1sb24tQU9kdnFUNmNNQTVDdm5vaw==";
+*/
+        String oauthLoginServer= sourceConfig.getAuthConfig().getoAuthConfig().getOauthLoginServer();
+        String oauthLoginEndpoint= sourceConfig.getAuthConfig().getoAuthConfig().getOauthLoginEndpoint();
+        String oauthLoginGrantType= sourceConfig.getAuthConfig().getoAuthConfig().getOauthLoginGrantType();
+        String oauthLoginScope= sourceConfig.getAuthConfig().getoAuthConfig().getOauthLoginScope();
+        String oauthAuthorizationToken= sourceConfig.getAuthConfig().getoAuthConfig().getOauthAuthorizationToken();
+        String oauthIntrospectEndpoint= sourceConfig.getAuthConfig().getoAuthConfig().getOauthIntrospectEndpoint();
+        String oauthIntrospectAuthorizationToken= sourceConfig.getAuthConfig().getoAuthConfig().getOauthIntrospectAuthorizationToken();
 
         properties.put("sasl.mechanism", "OAUTHBEARER");
-
         properties.put("security.protocol", "SASL_PLAINTEXT");
-
         properties.put("sasl.login.callback.handler.class","org.opensearch.dataprepper.plugins.kafka.oauth.OAuthAuthenticateLoginCallbackHandler");
-
-        properties.put("sasl.jaas.config", "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required OAUTH_LOGIN_SERVER=dev-75552796.okta.com OAUTH_LOGIN_ENDPOINT='/oauth2/default/v1/token' OAUTH_LOGIN_GRANT_TYPE=client_credentials OAUTH_LOGIN_SCOPE=kafka OAUTH_AUTHORIZATION='Basic MG9hOWRrMTdqelVtczZCUzg1ZDc6Ql9GNGF6VFpoVFNpeWlRdUR1cC1sb24tQU9kdnFUNmNNQTVDdm5vaw==' OAUTH_INTROSPECT_SERVER=dev-75552796.okta.com OAUTH_INTROSPECT_ENDPOINT='/oauth2/default/v1/introspect' OAUTH_INTROSPECT_AUTHORIZATION='Basic MG9hOWRrMTdqelVtczZCUzg1ZDc6Ql9GNGF6VFpoVFNpeWlRdUR1cC1sb24tQU9kdnFUNmNNQTVDdm5vaw==';");
+        //properties.put("sasl.jaas.config", "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required OAUTH_LOGIN_SERVER=dev-75552796.okta.com OAUTH_LOGIN_ENDPOINT='/oauth2/default/v1/token' OAUTH_LOGIN_GRANT_TYPE=client_credentials OAUTH_LOGIN_SCOPE=kafka OAUTH_AUTHORIZATION='Basic MG9hOWRrMTdqelVtczZCUzg1ZDc6Ql9GNGF6VFpoVFNpeWlRdUR1cC1sb24tQU9kdnFUNmNNQTVDdm5vaw==' OAUTH_INTROSPECT_SERVER=dev-75552796.okta.com OAUTH_INTROSPECT_ENDPOINT='/oauth2/default/v1/introspect' OAUTH_INTROSPECT_AUTHORIZATION='Basic MG9hOWRrMTdqelVtczZCUzg1ZDc6Ql9GNGF6VFpoVFNpeWlRdUR1cC1sb24tQU9kdnFUNmNNQTVDdm5vaw==';");
+        properties.put("sasl.jaas.config", "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required OAUTH_LOGIN_SERVER="+oauthLoginServer+" OAUTH_LOGIN_ENDPOINT='"+oauthLoginEndpoint+"' OAUTH_LOGIN_GRANT_TYPE="+oauthLoginGrantType+" OAUTH_LOGIN_SCOPE="+oauthLoginScope+" OAUTH_AUTHORIZATION='Basic "+oauthAuthorizationToken+"' OAUTH_INTROSPECT_SERVER=dev-75552796.okta.com OAUTH_INTROSPECT_ENDPOINT='"+oauthIntrospectEndpoint+"' OAUTH_INTROSPECT_AUTHORIZATION='Basic "+oauthIntrospectAuthorizationToken+"';");
 
     }
 

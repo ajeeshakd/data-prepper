@@ -14,7 +14,7 @@ import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.record.Record;
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
 import org.opensearch.dataprepper.plugins.kafka.configuration.SchemaConfig;
-import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileReader;
@@ -48,10 +48,10 @@ class PlainTextConsumerTest {
     private KafkaSourceConfig sourceConfig;
 
     @Mock
-    private TopicsConfig topicsConfig;
+    private TopicConfig topicConfig;
 
     @Mock
-    List<TopicsConfig> mockList = new ArrayList<TopicsConfig>();
+    List<TopicConfig> mockList = new ArrayList<TopicConfig>();
 
 
     @Mock
@@ -77,10 +77,10 @@ class PlainTextConsumerTest {
             String json = mapper.writeValueAsString(kafkaConfigMap);
             Reader reader = new StringReader(json);
             sourceConfig = mapper.readValue(reader, KafkaSourceConfig.class);
-            topicsConfig = sourceConfig.getTopics().get(0);
+            topicConfig = sourceConfig.getTopics().get(0);
         }
         pluginMetrics = mock(PluginMetrics.class);
-        plainTextConsumer = new PlainTextConsumer(kafkaPlainTextConsumer, status, buffer, topicsConfig,
+        plainTextConsumer = new PlainTextConsumer(kafkaPlainTextConsumer, status, buffer, topicConfig,
                 sourceConfig, "plaintext", pluginMetrics);
     }
 

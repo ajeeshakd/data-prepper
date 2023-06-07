@@ -12,7 +12,7 @@ import org.opensearch.dataprepper.metrics.PluginMetrics;
 import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.record.Record;
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
-import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
 
 import java.util.Properties;
 
@@ -29,7 +29,7 @@ class MultithreadedConsumerTest {
     @Mock
     KafkaSourceConfig sourceConfig;
     @Mock
-    TopicsConfig topicsConfig;
+    TopicConfig topicConfig;
     @Mock
     Buffer<Record<Object>> buffer;
     @Mock
@@ -43,8 +43,8 @@ class MultithreadedConsumerTest {
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "DPKafkaProj-1");
         pluginMetrics = mock(PluginMetrics.class);
-        topicsConfig = mock(TopicsConfig.class);
-        when(topicsConfig.getName()).thenReturn("test-topic-1");
+        topicConfig = mock(TopicConfig.class);
+        when(topicConfig.getName()).thenReturn("test-topic-1");
     }
 
     private MultithreadedConsumer createObjectUnderTest(String consumerId,
@@ -53,7 +53,7 @@ class MultithreadedConsumerTest {
         return new MultithreadedConsumer(consumerId,
                 consumerGroupId,
                 properties,
-                topicsConfig,
+                topicConfig,
                 sourceConfig,
                 buffer,
                 pluginMetrics,

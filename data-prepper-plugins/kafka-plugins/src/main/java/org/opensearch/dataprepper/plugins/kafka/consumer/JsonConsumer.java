@@ -18,7 +18,7 @@ import org.opensearch.dataprepper.metrics.PluginMetrics;
 import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.record.Record;
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
-import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
 import org.opensearch.dataprepper.plugins.kafka.source.KafkaSourceBufferAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class JsonConsumer implements KafkaSourceConsumer<String, JsonNode>, Cons
     final KafkaConsumer<String, JsonNode> consumer;
     final AtomicBoolean status;
     final Buffer<Record<Object>> buffer;
-    final TopicsConfig topicConfig;
+    final TopicConfig topicConfig;
     final KafkaSourceConfig kafkaSourceConfig;
     PluginMetrics pluginMetrics;
     final String schemaType;
@@ -55,7 +55,7 @@ public class JsonConsumer implements KafkaSourceConsumer<String, JsonNode>, Cons
     public JsonConsumer(KafkaConsumer<String,JsonNode> consumer,
                         AtomicBoolean status,
                         Buffer<Record<Object>> buffer,
-                        TopicsConfig topicConfig,
+                        TopicConfig topicConfig,
                         KafkaSourceConfig kafkaSourceConfig,
                         String schemaType,
                         PluginMetrics pluginMetrics) {

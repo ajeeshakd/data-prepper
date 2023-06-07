@@ -18,7 +18,7 @@ import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.record.Record;
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
 import org.opensearch.dataprepper.plugins.kafka.configuration.SchemaConfig;
-import org.opensearch.dataprepper.plugins.kafka.configuration.TopicsConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
@@ -55,10 +55,10 @@ class JsonConsumerTest {
 	private KafkaSourceConfig sourceConfig;
 	
 	@Mock
-	private TopicsConfig topicsConfig;
+	private TopicConfig topicConfig;
 	
 	@Mock
-	List<TopicsConfig> mockList = new ArrayList<TopicsConfig>();
+	List<TopicConfig> mockList = new ArrayList<TopicConfig>();
 
 
 	@Mock
@@ -70,8 +70,8 @@ class JsonConsumerTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		when(sourceConfig.getTopics()).thenReturn((mockList));
-		when(mockList.get(0)).thenReturn(topicsConfig);
-		jsonConsumer = new JsonConsumer(kafkaJsonConsumer, status, buffer, topicsConfig,
+		when(mockList.get(0)).thenReturn(topicConfig);
+		jsonConsumer = new JsonConsumer(kafkaJsonConsumer, status, buffer, topicConfig,
 				sourceConfig, "json", pluginMetrics);
 		/*when(topicsConfig.getTopic()).thenReturn(topicConfig);
 		when(topicConfig.getConsumerGroupConfig()).thenReturn(mock(ConsumerConfigs.class));

@@ -27,6 +27,10 @@ public class AuthConfig {
         this.oAuthConfig = oAuthConfig;
     }
 
+    public void setPlainTextAuthConfig(PlainTextAuthConfig plainTextAuthConfig) {
+        this.plainTextAuthConfig = plainTextAuthConfig;
+    }
+
     public PlainTextAuthConfig getPlainTextAuthConfig() {
         return plainTextAuthConfig;
     }

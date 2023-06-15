@@ -8,7 +8,6 @@ package org.opensearch.dataprepper.plugins.kafka.source;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.micrometer.core.instrument.Counter;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -50,7 +49,7 @@ public class KafkaSourceBufferAccumulator<K, V> {
     private final KafkaSourceConfig kafkaSourceConfig;
     private final String schemaType;
     private PluginMetrics pluginMetrics;
-    private final Counter kafkaConsumerWriteError;
+    //private final Counter kafkaConsumerWriteError;
     private static final String KAFKA_CONSUMER_BUFFER_WRITE_ERROR = "kafkaConsumerBufferWriteError";
     private static final int MAX_FLUSH_RETRIES_ON_IO_EXCEPTION = Integer.MAX_VALUE;
     private static final Duration INITIAL_FLUSH_RETRY_DELAY_ON_IO_EXCEPTION = Duration.ofSeconds(5);
@@ -65,7 +64,6 @@ public class KafkaSourceBufferAccumulator<K, V> {
         this.topicConfig = topicConfigs;
         this.schemaType = schemaType;
         this.pluginMetrics = pluginMetric;
-        this.kafkaConsumerWriteError = pluginMetrics.counter(KAFKA_CONSUMER_BUFFER_WRITE_ERROR);
     }
 
     public Record<Object> getEventRecord(final String line) {
@@ -95,7 +93,7 @@ public class KafkaSourceBufferAccumulator<K, V> {
                 writeWithBackoff(kafkaRecords, buffer, topicConfig);
             }
             LOG.error("Error occurred while writing data to the buffer {}", e.getMessage());
-            kafkaConsumerWriteError.increment();
+            //kafkaConsumerWriteError.increment();
         }
     }
 

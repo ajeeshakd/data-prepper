@@ -31,11 +31,6 @@ public class KafkaSourceConfig {
     @Size(min = 1, max = 10, message = "The number of Topics should be between 1 and 10")
     private List<TopicConfig> topics;
 
-  @JsonProperty("auth_type")
-  //@NotNull
-  //@Valid
-  private String authType;
-
   @JsonProperty("schema")
   //@NotNull
   @Valid
@@ -59,14 +54,6 @@ public class KafkaSourceConfig {
 
   public void setBootStrapServers(List<String> bootStrapServers) {
     this.bootStrapServers = bootStrapServers;
-  }
-
-  public String getAuthType() {
-    return authType;
-  }
-
-  public void setAuthType(String authType) {
-    this.authType = authType;
   }
 
   public SchemaConfig getSchemaConfig() {

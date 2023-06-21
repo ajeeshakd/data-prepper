@@ -28,7 +28,6 @@ import org.opensearch.dataprepper.plugins.kafka.configuration.OAuthConfig;
 import org.opensearch.dataprepper.plugins.kafka.configuration.PlainTextAuthConfig;
 import org.opensearch.dataprepper.plugins.kafka.configuration.AuthConfig;
 import org.opensearch.dataprepper.plugins.kafka.consumer.MultithreadedConsumer;
-import org.opensearch.dataprepper.test.helper.ReflectivelySetField;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.yaml.snakeyaml.Yaml;
 
@@ -42,11 +41,12 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.verify;
-
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -102,47 +102,45 @@ class KafkaSourceTest {
     }
 
     @Test
-    void test_kafkaSource_start_with_plaintext() throws Exception {
+    void test_start_with_exception() {
         List<TopicConfig> topicConfigList = new ArrayList<TopicConfig>();
         KafkaSourceConfig sourceConfig = new KafkaSourceConfig();
         AuthConfig authConfig = new AuthConfig();
         authConfig.setoAuthConfig(oAuthConfig);
         sourceConfig.setSchemaConfig(schemaConfig);
         topicConfig.setName(TOPIC);
-
         topicConfigList.add(topicConfig);
         sourceConfig.setTopics(topicConfigList);
         sourceConfig.setBootStrapServers(Arrays.asList(BOOTSTRAP_SERVERS));
         sourceConfig.setAuthConfig(authConfig);
-
+        sourceConfig.setSchemaConfig(schemaConfig);
         source = new KafkaSource(sourceConfig, pluginMetrics, pipelineDescription);
         KafkaSource spySource = spy(source);
         doCallRealMethod().when(spySource).start(any());
-        spySource.start(any());
-        verify(spySource).start(any());
+        assertThrows(RuntimeException.class,
+                () -> spySource.start(any()));
     }
 
     @Test
-    void test_kafkaSource_start_with_avro() throws Exception {
+    void test_start() {
         List<TopicConfig> topicConfigList = new ArrayList<TopicConfig>();
         KafkaSourceConfig sourceConfig = new KafkaSourceConfig();
         AuthConfig authConfig = new AuthConfig();
         authConfig.setoAuthConfig(oAuthConfig);
         sourceConfig.setSchemaConfig(schemaConfig);
         topicConfig.setName(TOPIC);
-
         topicConfigList.add(topicConfig);
         sourceConfig.setTopics(topicConfigList);
         sourceConfig.setBootStrapServers(Arrays.asList(BOOTSTRAP_SERVERS));
         sourceConfig.setAuthConfig(authConfig);
-
+        sourceConfig.setSchemaConfig(schemaConfig);
         source = new KafkaSource(sourceConfig, pluginMetrics, pipelineDescription);
-        ReflectivelySetField.setField(KafkaSource.class, source, "schemaType", "avro");
         KafkaSource spySource = spy(source);
         doCallRealMethod().when(spySource).start(any());
         spySource.start(any());
-        verify(spySource).start(any());
     }
+
+
     @Test
     void test_kafkaSource_start_execution_catch_block() {
         source = new KafkaSource(null, pluginMetrics, pipelineDescription);
@@ -160,6 +158,7 @@ class KafkaSourceTest {
         spySource.stop();
         verify(spySource).stop();
     }
+
 
     private List<MultithreadedConsumer> buildKafkaSourceConsumer() {
         List<MultithreadedConsumer> consumers = new ArrayList<>();
@@ -194,4 +193,9 @@ class KafkaSourceTest {
         spySource.start(any());
         verify(spySource).start(any());
     }
+
+
+   //==============================================
+
+
 }

@@ -16,7 +16,7 @@ public class OAuthConfig {
     private static final String OAUTH_SASL_MECHANISM = "OAUTHBEARER";
     private static final String OAUTH_SECURITY_PROTOCOL = "SASL_PLAINTEXT";
     private static final String OAUTH_SASL_LOGIN_CALLBACK_HANDLER_CLASS = "org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler";
-
+    private static final String OAUTH_INTROSPECT_ENDPOINT = "/oauth2/default/v1/introspect";
     @JsonProperty("oauth_client_id")
     private String oauthClientId;
     @JsonProperty("oauth_client_secret")
@@ -47,7 +47,7 @@ public class OAuthConfig {
     private String oauthSaslLoginCallbackHandlerClass = OAUTH_SASL_LOGIN_CALLBACK_HANDLER_CLASS;
 
     @JsonProperty("oauth_jwks_endpoint_url")
-    private String oauthJwksEndpointURL;
+    private String oauthJwksEndpointURL = "";
 
     public String getOauthJwksEndpointURL() {
         return oauthJwksEndpointURL;
@@ -110,9 +110,9 @@ public class OAuthConfig {
     }
 
     public String getOauthIntrospectServer() {
-        if (oauthIntrospectServer.isEmpty() || oauthIntrospectServer.isBlank()) {
+        /*if (oauthIntrospectServer.isEmpty() || oauthIntrospectServer.isBlank()) {
             return oauthLoginServer;
-        }
+        }*/
         return oauthIntrospectServer;
     }
 
@@ -121,8 +121,8 @@ public class OAuthConfig {
     }
 
     public String getOauthIntrospectEndpoint() {
-        if (oauthIntrospectEndpoint.isEmpty() || oauthIntrospectEndpoint.isBlank()) {
-            return oauthLoginEndpoint;
+        if (!oauthIntrospectServer.isEmpty() || !oauthIntrospectServer.isBlank()) {
+            return OAUTH_INTROSPECT_ENDPOINT;
         }
         return oauthIntrospectEndpoint;
     }

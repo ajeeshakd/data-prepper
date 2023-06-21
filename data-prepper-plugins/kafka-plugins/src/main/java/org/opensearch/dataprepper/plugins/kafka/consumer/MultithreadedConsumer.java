@@ -29,14 +29,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @SuppressWarnings("deprecation")
 public class MultithreadedConsumer implements Runnable {
-	private KafkaConsumer<String, String> plainTextConsumer = null;
-	private KafkaConsumer<String, JsonNode> jsonConsumer = null;
-	private KafkaConsumer<String, GenericRecord> avroConsumer = null;
+	//private KafkaConsumer<String, String> plainTextConsumer = null;
+	//private KafkaConsumer<String, JsonNode> jsonConsumer = null;
+	//private KafkaConsumer<String, GenericRecord> avroConsumer = null;
 	private static final Logger LOG = LoggerFactory.getLogger(MultithreadedConsumer.class);
 	private final AtomicBoolean status = new AtomicBoolean(false);
 	private final KafkaSourceConfig sourceConfig;
 	private final TopicConfig topicConfig;
 	private final Buffer<Record<Object>> buffer;
+	private final KafkaSourceCustomConsumer customConsumer= new KafkaSourceCustomConsumer();
 	private String consumerId;
 	private String consumerGroupId;
 	private String schemaType;
@@ -59,9 +60,9 @@ public class MultithreadedConsumer implements Runnable {
 		this.buffer = buffer;
 		this.schemaType = schemaType;
 		this.pluginMetrics = pluginMetric;
-		this.jsonConsumer = new KafkaConsumer<>(consumerProperties);
-		this.plainTextConsumer = new KafkaConsumer<>(consumerProperties);
-		this.avroConsumer = new KafkaConsumer<>(consumerProperties);
+		//this.jsonConsumer = new KafkaConsumer<>(consumerProperties);
+		//this.plainTextConsumer = new KafkaConsumer<>(consumerProperties);
+		//this.avroConsumer = new KafkaConsumer<>(consumerProperties);
 
 	}
 
@@ -73,14 +74,14 @@ public class MultithreadedConsumer implements Runnable {
 			MessageFormat schema = MessageFormat.getByMessageFormatByName(schemaType);
 			switch(schema){
 				case JSON:
-					new KafkaSourceCustomConsumer(jsonConsumer, status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
+					new KafkaSourceCustomConsumer(new KafkaConsumer<String, JsonNode>(consumerProperties), status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
 					break;
 				case AVRO:
-					new KafkaSourceCustomConsumer(avroConsumer, status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
+					new KafkaSourceCustomConsumer(new KafkaConsumer<String, GenericRecord>(consumerProperties), status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
 					break;
 				case PLAINTEXT:
 				default:
-					new KafkaSourceCustomConsumer(plainTextConsumer, status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
+					new KafkaSourceCustomConsumer(new KafkaConsumer<String,String>(consumerProperties), status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
 					break;
 			}
 
@@ -95,30 +96,11 @@ public class MultithreadedConsumer implements Runnable {
 	}
 
 	private void closeConsumers() {
-		if (plainTextConsumer != null) {
-			plainTextConsumer.close();
-			plainTextConsumer = null;
-		}
-		if (jsonConsumer != null) {
-			jsonConsumer.close();
-			jsonConsumer = null;
-		}
-		if (avroConsumer != null) {
-			avroConsumer.close();
-			avroConsumer = null;
-		}
+		customConsumer.closeConsumer();
 	}
 
 	public void shutdownConsumer() {
 		status.set(false);
-		if (plainTextConsumer != null) {
-			plainTextConsumer.wakeup();
-		}
-		if (jsonConsumer != null) {
-			jsonConsumer.wakeup();
-		}
-		if (avroConsumer != null) {
-			avroConsumer.wakeup();
-		}
+		customConsumer.shutdownConsumer();
 	}
 }

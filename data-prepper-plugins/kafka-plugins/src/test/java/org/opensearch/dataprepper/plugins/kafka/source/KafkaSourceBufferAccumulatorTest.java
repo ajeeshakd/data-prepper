@@ -6,6 +6,8 @@
 package org.opensearch.dataprepper.plugins.kafka.source;
 
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +25,7 @@ import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -37,6 +40,8 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class KafkaSourceBufferAccumulatorTest {
 
+	@Mock
+	Map<TopicPartition, OffsetAndMetadata> offsetsToCommit;
 	@Mock
 	private KafkaSourceBufferAccumulator<String, String> buffer;
 
@@ -70,13 +75,13 @@ class KafkaSourceBufferAccumulatorTest {
 
 		when(sourceConfig.getSchemaConfig()).thenReturn(mock(SchemaConfig.class));
 
-		buffer = new KafkaSourceBufferAccumulator<>(topicConfig, sourceConfig, "plaintext", pluginMetrics);
+		//buffer = new KafkaSourceBufferAccumulator<>(topicConfig, sourceConfig, "plaintext", pluginMetrics);
 	}
 
 	@Test
 	void testWriteEventOrStringToBuffer_plaintext_schemaType() throws Exception {
 		createObjectWithSchemaType("plaintext");
-
+		buffer = new KafkaSourceBufferAccumulator<>(topicConfig, sourceConfig, "plaintext", pluginMetrics);
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
 		doCallRealMethod().when(spyBuffer).getEventRecord("anyString");
 		spyBuffer.getEventRecord("anyString");
@@ -88,7 +93,7 @@ class KafkaSourceBufferAccumulatorTest {
 	void testWriteEventOrStringToBuffer_json_schemaType() throws Exception {
 		String json = "{\"writebuffer\":\"true\",\"buffertype\":\"json\"}";
 		createObjectWithSchemaType("json"); //Added By Mehak
-
+		buffer = new KafkaSourceBufferAccumulator<>(topicConfig, sourceConfig, "json", pluginMetrics);
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
 		doCallRealMethod().when(spyBuffer).getEventRecord(json);
 		spyBuffer.getEventRecord(json);
@@ -99,7 +104,7 @@ class KafkaSourceBufferAccumulatorTest {
 	@Test
 	void testWriteEventOrStringToBuffer_json_schemaType_catch_block() throws Exception {
 		createObjectWithSchemaType("json");
-
+		buffer = new KafkaSourceBufferAccumulator<>(topicConfig, sourceConfig, "json", pluginMetrics);
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
 		doCallRealMethod().when(spyBuffer).getEventRecord("anyString");
 		spyBuffer.getEventRecord("anyString");
@@ -110,7 +115,7 @@ class KafkaSourceBufferAccumulatorTest {
 	@Test
 	void testWriteEventOrStringToBuffer_plaintext_schemaType_catch_block() throws Exception {
 		createObjectWithSchemaType("plaintext");
-
+		buffer = new KafkaSourceBufferAccumulator<>(topicConfig, sourceConfig, "plaintext", pluginMetrics);
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
 		doCallRealMethod().when(spyBuffer).getEventRecord(null);
 		spyBuffer.getEventRecord(null);
@@ -121,7 +126,6 @@ class KafkaSourceBufferAccumulatorTest {
 	@Test
 	void testwrite()throws Exception{
 		TopicConfig topicConfig = new TopicConfig();
-		SchemaConfig schemaConfig = new SchemaConfig();
 		topicConfig.setBufferDefaultTimeout(Duration.ofMillis(100));
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
 		doCallRealMethod().when(spyBuffer).write(kafkaRecords, record);
@@ -130,7 +134,6 @@ class KafkaSourceBufferAccumulatorTest {
 	}
 
 	private void createObjectWithSchemaType(String schema){
-
 		topicConfig = new TopicConfig();
 		schemaConfig = new SchemaConfig();
 		topicConfig.setBufferDefaultTimeout(Duration.ofMillis(100));
@@ -149,11 +152,21 @@ class KafkaSourceBufferAccumulatorTest {
 	}
 
 	@Test
-	void testPublishRecordToBuffer_commitOffsets() throws Exception {
+	void testPublishRecordToBuffer_commitOffsets_with_emptydata() throws Exception {
 		topicConfig = new TopicConfig();
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
 		doCallRealMethod().when(spyBuffer).commitOffsets(kafkaConsumer, 0L, null);
 		spyBuffer.commitOffsets(kafkaConsumer, 0L, null);
 		verify(spyBuffer).commitOffsets(kafkaConsumer, 0L, null);
 	}
+
+	@Test
+	void testPublishRecordToBuffer_commitOffsets() throws Exception {
+		topicConfig = new TopicConfig();
+		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
+		doCallRealMethod().when(spyBuffer).commitOffsets(kafkaConsumer, 12345678L, offsetsToCommit);
+		spyBuffer.commitOffsets(kafkaConsumer, 12345678L, offsetsToCommit);
+		verify(spyBuffer).commitOffsets(kafkaConsumer, 12345678L, offsetsToCommit);
+	}
+
 }

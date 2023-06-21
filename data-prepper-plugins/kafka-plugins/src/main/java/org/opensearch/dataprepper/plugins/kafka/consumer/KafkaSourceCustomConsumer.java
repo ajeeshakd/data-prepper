@@ -32,17 +32,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class KafkaSourceCustomConsumer implements ConsumerRebalanceListener {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaSourceCustomConsumer.class);
     private Map<TopicPartition, OffsetAndMetadata> offsetsToCommit = new HashMap<>();
-    private KafkaConsumer<String, Object> kafkaConsumer;
     private long lastReadOffset = 0L;
     private volatile long lastCommitTime = System.currentTimeMillis();
-    private final KafkaConsumer<String, Object> consumer;
-    private final AtomicBoolean status ;
-    private final Buffer<Record<Object>> buffer;
-    private final TopicConfig topicConfig;
-    private final KafkaSourceConfig kafkaSourceConfig;
-    private final PluginMetrics pluginMetrics;
-    private final String schemaType;
-    private final KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator;
+    private KafkaConsumer<String, Object> consumer= null;
+    private AtomicBoolean status = new AtomicBoolean(false);
+    private Buffer<Record<Object>> buffer= null;
+    private TopicConfig topicConfig = null;
+    private KafkaSourceConfig kafkaSourceConfig= null;
+    private PluginMetrics pluginMetrics= null;
+    private String schemaType= null;
+
+    public KafkaSourceCustomConsumer() {
+    }
+
+    private KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator= null;
     public KafkaSourceCustomConsumer(KafkaConsumer consumer,
                                AtomicBoolean status,
                                Buffer<Record<Object>> buffer,
@@ -59,7 +62,6 @@ public class KafkaSourceCustomConsumer implements ConsumerRebalanceListener {
         this.pluginMetrics = pluginMetrics;
         kafkaSourceBufferAccumulator=   new KafkaSourceBufferAccumulator(topicConfig, kafkaSourceConfig,
                 schemaType, pluginMetrics);
-
     }
 
 
@@ -67,13 +69,13 @@ public class KafkaSourceCustomConsumer implements ConsumerRebalanceListener {
     public void consumeRecords() {
         try {
             consumer.subscribe(Arrays.asList(topicConfig.getName()));
-            while (!status.get()){
+           do {
                 offsetsToCommit.clear();
                 ConsumerRecords<String, Object> records = poll(consumer);
                 if (!records.isEmpty() && records.count() > 0) {
                     iterateRecordPartitions(records);
                 }
-            }
+            }while (!status.get());
         } catch (Exception exp) {
             LOG.error("Error while reading the records from the topic...", exp);
         }
@@ -103,17 +105,28 @@ public class KafkaSourceCustomConsumer implements ConsumerRebalanceListener {
         return consumer.poll(Duration.ofMillis(1));
     }
 
+    public void closeConsumer(){
+        if(consumer != null) {
+            consumer.close();
+        }
+    }
+
+    public void shutdownConsumer(){
+        if(consumer != null) {
+            consumer.wakeup();
+        }
+    }
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
         for (TopicPartition partition : partitions) {
-            kafkaConsumer.seek(partition, lastReadOffset);
+            consumer.seek(partition, lastReadOffset);
         }
     }
 
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
         try {
-            kafkaConsumer.commitSync(offsetsToCommit);
+            consumer.commitSync(offsetsToCommit);
         } catch (CommitFailedException e) {
             LOG.error("Failed to commit the record for the Json consumer...", e);
         }

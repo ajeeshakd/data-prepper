@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.opensearch.dataprepper.metrics.PluginMetrics;
 import org.opensearch.dataprepper.model.buffer.Buffer;
@@ -21,12 +22,13 @@ import java.io.StringReader;
 import java.util.Properties;
 import java.util.Map;
 
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doCallRealMethod;
+
 
 class MultithreadedConsumerTest {
-
-    @Mock
-    MultithreadedConsumer multithreadedConsumer;
     @Mock
     Properties properties;
     @Mock
@@ -38,18 +40,9 @@ class MultithreadedConsumerTest {
     @Mock
     PluginMetrics pluginMetrics;
     private static final String BOOTSTRAP_SERVERS = "localhost:9092";
-    @BeforeEach
-    void setUp()throws IOException {
-        properties = new Properties();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "DPKafkaProj-1");
-       // pluginMetrics = mock(PluginMetrics.class);
-       // topicConfig = mock(TopicConfig.class);
-       // sourceConfig = mock(KafkaSourceConfig.class);
-       // when(topicConfig.getName()).thenReturn("test-topic-1");
 
+    @BeforeEach
+    void setUp() throws IOException {
         Yaml yaml = new Yaml();
         FileReader fileReader = new FileReader(getClass().getClassLoader().getResource("sample-pipelines.yaml").getFile());
         Object data = yaml.load(fileReader);
@@ -67,12 +60,11 @@ class MultithreadedConsumerTest {
         }
         pluginMetrics = mock(PluginMetrics.class);
         buffer = mock(Buffer.class);
-       // status = new AtomicBoolean();
     }
 
     private MultithreadedConsumer createObjectUnderTest(String consumerId,
                                                         String consumerGroupId,
-                                                        String schema){
+                                                        String schema) {
         return new MultithreadedConsumer(consumerId,
                 consumerGroupId,
                 properties,
@@ -83,41 +75,64 @@ class MultithreadedConsumerTest {
                 schema);
     }
 
-   // @ParameterizedTest
-   // @ValueSource(strings = "plaintext")
-  /*  @Test
-    void testRunWithPlainText() throws InterruptedException {
-        String topic = topicConfig.getName();
-        //schemaType = "plaintext";
-        Map<TopicPartition, List<ConsumerRecord<String, Object>>> records = new LinkedHashMap<>();
-        Thread producerThread = new Thread(() -> {
-            ConsumerRecord<String, Object> record1 = new ConsumerRecord<>(topic, 0, 0L, "mykey-1", "myvalue-1");
-            ConsumerRecord<String, Object> record2 = new ConsumerRecord<>(topic, 0, 0L, "mykey-2", "myvalue-2");
-            records.put(new TopicPartition(topic, 1), Arrays.asList(record1, record2));
-        });
-        producerThread.start();
-        TimeUnit.SECONDS.sleep(1);
-        producerThread.join();
-        multithreadedConsumer = createObjectUnderTest("DPKafkaProj-1",
-                "DPKafkaProj-1","plaintext");
-        MultithreadedConsumer spySource = spy(multithreadedConsumer);
-        doCallRealMethod().when(spySource).run();
-        spySource.run();
-        verify(spySource).run();
-    }*/
-
-
-   /* @ParameterizedTest
-    @ValueSource(strings = {"plaintext", "json", "avro"})
     @Test
-    void testRunWithParameters(String schemaType) {
-        multithreadedConsumer = createObjectUnderTest("DPKafkaProj-1",
-                "DPKafkaProj-1",
-                schemaType);
+    void testRunWithPlainText() {
+        Properties prop = getProperties();
+        MultithreadedConsumer multithreadedConsumer = new MultithreadedConsumer(
+                topicConfig.getGroupId(),
+                topicConfig.getGroupId(),
+                prop, topicConfig, sourceConfig, buffer, pluginMetrics, "plaintext");
         MultithreadedConsumer spySource = spy(multithreadedConsumer);
         doCallRealMethod().when(spySource).run();
         spySource.run();
         verify(spySource).run();
-    }*/
+    }
+
+    @Test
+    void testRunWithJson() {
+        Properties prop = getProperties();
+        MultithreadedConsumer multithreadedConsumer = new MultithreadedConsumer(
+                topicConfig.getGroupId(),
+                topicConfig.getGroupId(),
+                prop, topicConfig, sourceConfig, buffer, pluginMetrics, "json");
+        MultithreadedConsumer spySource = spy(multithreadedConsumer);
+        doCallRealMethod().when(spySource).run();
+        spySource.run();
+        verify(spySource).run();
+    }
+
+    @Test
+    void testRunWithAvro() {
+        Properties prop = getProperties();
+        MultithreadedConsumer multithreadedConsumer = new MultithreadedConsumer(
+                topicConfig.getGroupId(),
+                topicConfig.getGroupId(),
+                prop, topicConfig, sourceConfig, buffer, pluginMetrics, "avro");
+        MultithreadedConsumer spySource = spy(multithreadedConsumer);
+        doCallRealMethod().when(spySource).run();
+        spySource.run();
+        verify(spySource).run();
+    }
+
+    @Test
+    void testShutdownConsumer() {
+        Properties prop = getProperties();
+        MultithreadedConsumer multithreadedConsumer = new MultithreadedConsumer(
+                topicConfig.getGroupId(),
+                topicConfig.getGroupId(),
+                prop, topicConfig, sourceConfig, buffer, pluginMetrics, "avro");
+        MultithreadedConsumer spySource = spy(multithreadedConsumer);
+        doCallRealMethod().when(spySource).shutdownConsumer();
+        spySource.shutdownConsumer();
+        verify(spySource).shutdownConsumer();
+    }
+
+    private Properties getProperties() {
+        Properties prop = new Properties();
+        prop.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        prop.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        prop.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        return prop;
+    }
 
 }

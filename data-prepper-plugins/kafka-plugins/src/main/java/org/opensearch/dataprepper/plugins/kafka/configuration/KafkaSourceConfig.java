@@ -26,21 +26,26 @@ public class KafkaSourceConfig {
   @Size(min = 1, message = "Bootstrap servers can't be empty")
   private List<String> bootStrapServers;
 
+  @JsonProperty("serde_format")
+  private String serdeFormat;
+
     @JsonProperty("topics")
     @NotNull
     @Size(min = 1, max = 10, message = "The number of Topics should be between 1 and 10")
     private List<TopicConfig> topics;
 
   @JsonProperty("schema")
-  //@NotNull
   @Valid
   private SchemaConfig schemaConfig;
 
   @JsonProperty("authentication")
- // @Valid
   private AuthConfig authConfig;
 
-    public List<TopicConfig> getTopics() {
+  public String getSerdeFormat() {
+    return serdeFormat;
+  }
+
+  public List<TopicConfig> getTopics() {
         return topics;
     }
 

@@ -14,25 +14,50 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SchemaConfig {
 
-  @JsonProperty("registry_url")
-  private String registryURL;
+    @JsonProperty("registry_url")
+    private String registryURL;
 
-  @JsonProperty("version")
-  private int version;
+    @JsonProperty("version")
+    private int version;
 
-  public String getRegistryURL() {
-    return registryURL;
-  }
+    @JsonProperty("cluster_api_key")
+    private String clusterApiKey;
+    @JsonProperty("cluster_api_secret")
+    private String clusterApiSecret;
+    @JsonProperty("schema_registry_api_key")
+    private String schemaRegistryApiKey;
+    @JsonProperty("schema_registry_api_secret")
+    private String schemaRegistryApiSecret;
 
-  public void setRegistryURL(String registryURL) {
-    this.registryURL = registryURL;
-  }
+    public String getRegistryURL() {
+        return registryURL;
+    }
 
-  public int getVersion() {
-    return version;
-  }
+    public void setRegistryURL(String registryURL) {
+        this.registryURL = registryURL;
+    }
 
-  public void setVersion(int version) {
-    this.version = version;
-  }
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public String getClusterApiKey() {
+        return clusterApiKey;
+    }
+
+    public String getClusterApiSecret() {
+        return clusterApiSecret;
+    }
+
+    public String getSchemaRegistryApiKey() {
+        return schemaRegistryApiKey;
+    }
+
+    public String getSchemaRegistryApiSecret() {
+        return schemaRegistryApiSecret;
+    }
 }

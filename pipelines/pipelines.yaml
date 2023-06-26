@@ -2,10 +2,12 @@ log-pipeline:
   source:
     kafka:
       bootstrap_servers:
-        - 127.0.0.1:9092
+        - localhost:9092
+        #- pkc-ymrq7.us-east-2.aws.confluent.cloud:9093
       #auth_type: plaintext
+      serde_format: json
       topics:
-        - name: my-kafka
+        - name: kafka-json
           group_id: DPKafkaProj-2
           workers: 10
           autocommit: false
@@ -25,7 +27,19 @@ log-pipeline:
           max_poll_interval: 300000s
           consumer_max_poll_records: 500
       schema:
-        registry_url: http://localhost:8085/
-        version: 1
+        #registry_url: https://psrc-em82q.us-east-2.aws.confluent.cloud
+        #registry_url: http://localhost:8085
+        #version: 1
+        #cluster_api_key: LEWMKHNISW2LTBGW
+        #cluster_api_secret: UY/+LogHp7QJ8C9gQkdKIeXxiV8Pyt9nRRX0ij/aODN2qiDwS0NtV0vfZtPT5kz4
+        #schema_registry_api_key: US3HLWRJXMKI2C6K
+        #schema_registry_api_secret: ts60pxjeQxENAEgph4C1uyB+Jismijn8Ia5kikl63nnp0yw5HvEhiBG1J0Ue9V4B
+      authentication:
+        protocol:
+          plaintext: SASL_PLAINTEXT
+          ssl:
+        mechanism:
+          plain:
+          oauth:
   sink:
     - stdout:

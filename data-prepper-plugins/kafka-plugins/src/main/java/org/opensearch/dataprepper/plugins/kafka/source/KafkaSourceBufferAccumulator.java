@@ -49,7 +49,6 @@ public class KafkaSourceBufferAccumulator<K, V> {
     private final KafkaSourceConfig kafkaSourceConfig;
     private final String schemaType;
     private PluginMetrics pluginMetrics;
-    //private final Counter kafkaConsumerWriteError;
     private static final String KAFKA_CONSUMER_BUFFER_WRITE_ERROR = "kafkaConsumerBufferWriteError";
     private static final int MAX_FLUSH_RETRIES_ON_IO_EXCEPTION = Integer.MAX_VALUE;
     private static final Duration INITIAL_FLUSH_RETRY_DELAY_ON_IO_EXCEPTION = Duration.ofSeconds(5);
@@ -93,7 +92,6 @@ public class KafkaSourceBufferAccumulator<K, V> {
                 writeWithBackoff(kafkaRecords, buffer, topicConfig);
             }
             LOG.error("Error occurred while writing data to the buffer {}", e.getMessage());
-            //kafkaConsumerWriteError.increment();
         }
     }
 
@@ -163,10 +161,10 @@ public class KafkaSourceBufferAccumulator<K, V> {
 
     public long processConsumerRecords(Map<TopicPartition, OffsetAndMetadata> offsetsToCommit,
                                        List<Record<Object>> kafkaRecords,
-                                       long lastReadOffset, ConsumerRecord<String, String> consumerRecord, List<ConsumerRecord<String, String>> partitionRecords) {
+                                       long lastReadOffset, ConsumerRecord<String, Object> consumerRecord, List<ConsumerRecord<String, Object>> partitionRecords) {
         offsetsToCommit.put(new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
                     new OffsetAndMetadata(consumerRecord.offset() + 1, null));
-        kafkaRecords.add(getEventRecord(consumerRecord.value()));
+        kafkaRecords.add(getEventRecord(consumerRecord.value().toString()));
         lastReadOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
         return lastReadOffset;
     }

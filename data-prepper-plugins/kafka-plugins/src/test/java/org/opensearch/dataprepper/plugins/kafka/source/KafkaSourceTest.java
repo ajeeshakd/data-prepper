@@ -95,8 +95,8 @@ class KafkaSourceTest {
             Reader reader = new StringReader(json);
             sourceConfig = mapper.readValue(reader, KafkaSourceConfig.class);
             topicConfig = sourceConfig.getTopics().get(0);
-            oAuthConfig = sourceConfig.getAuthConfig().getoAuthConfig();
-            plainTextAuthConfig = sourceConfig.getAuthConfig().getPlainTextAuthConfig();
+            oAuthConfig = sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig();
+            plainTextAuthConfig = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig();
             schemaConfig = sourceConfig.getSchemaConfig();
         }
     }
@@ -106,7 +106,7 @@ class KafkaSourceTest {
         List<TopicConfig> topicConfigList = new ArrayList<TopicConfig>();
         KafkaSourceConfig sourceConfig = new KafkaSourceConfig();
         AuthConfig authConfig = new AuthConfig();
-        authConfig.setoAuthConfig(oAuthConfig);
+        //authConfig.getAuthMechanismConfig().setoAuthConfig(oAuthConfig);
         sourceConfig.setSchemaConfig(schemaConfig);
         topicConfig.setName(TOPIC);
         topicConfigList.add(topicConfig);
@@ -126,7 +126,7 @@ class KafkaSourceTest {
         List<TopicConfig> topicConfigList = new ArrayList<TopicConfig>();
         KafkaSourceConfig sourceConfig = new KafkaSourceConfig();
         AuthConfig authConfig = new AuthConfig();
-        authConfig.setoAuthConfig(oAuthConfig);
+        //authConfig.setoAuthConfig(oAuthConfig);
         sourceConfig.setSchemaConfig(schemaConfig);
         topicConfig.setName(TOPIC);
         topicConfigList.add(topicConfig);
@@ -178,7 +178,7 @@ class KafkaSourceTest {
         List<TopicConfig> topicConfigList = new ArrayList<TopicConfig>();
         KafkaSourceConfig sourceConfig = new KafkaSourceConfig();
         AuthConfig authConfig = new AuthConfig();
-        authConfig.setPlainTextAuthConfig(plainTextAuthConfig);
+        //authConfig.setPlainTextAuthConfig(plainTextAuthConfig);
         sourceConfig.setSchemaConfig(schemaConfig);
         topicConfig.setName(TOPIC);
 

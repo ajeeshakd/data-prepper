@@ -29,12 +29,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class KafkaSourceCustomConsumer implements ConsumerRebalanceListener {
+public class KafkaSourceCustomConsumer<T> implements ConsumerRebalanceListener {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaSourceCustomConsumer.class);
     private Map<TopicPartition, OffsetAndMetadata> offsetsToCommit = new HashMap<>();
     private long lastReadOffset = 0L;
     private volatile long lastCommitTime = System.currentTimeMillis();
-    private KafkaConsumer<String, Object> consumer= null;
+    private KafkaConsumer<String, T> consumer= null;
     private AtomicBoolean status = new AtomicBoolean(false);
     private Buffer<Record<Object>> buffer= null;
     private TopicConfig topicConfig = null;
@@ -47,12 +47,12 @@ public class KafkaSourceCustomConsumer implements ConsumerRebalanceListener {
 
     private KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator= null;
     public KafkaSourceCustomConsumer(KafkaConsumer consumer,
-                               AtomicBoolean status,
-                               Buffer<Record<Object>> buffer,
-                               TopicConfig topicConfig,
-                               KafkaSourceConfig kafkaSourceConfig,
-                               String schemaType,
-                               PluginMetrics pluginMetrics) {
+                                     AtomicBoolean status,
+                                     Buffer<Record<Object>> buffer,
+                                     TopicConfig topicConfig,
+                                     KafkaSourceConfig kafkaSourceConfig,
+                                     String schemaType,
+                                     PluginMetrics pluginMetrics) {
         this.consumer = consumer;
         this.status = status;
         this.buffer = buffer;
@@ -69,10 +69,11 @@ public class KafkaSourceCustomConsumer implements ConsumerRebalanceListener {
     public void consumeRecords() {
         try {
             consumer.subscribe(Arrays.asList(topicConfig.getName()));
-           do {
+            do {
                 offsetsToCommit.clear();
-                ConsumerRecords<String, Object> records = poll(consumer);
+                ConsumerRecords<String, T> records = poll(consumer);
                 if (!records.isEmpty() && records.count() > 0) {
+                    System.out.println("\tRecord is not EMPTY======== Size :"+records.count());
                     iterateRecordPartitions(records);
                 }
             }while (!status.get());
@@ -81,10 +82,10 @@ public class KafkaSourceCustomConsumer implements ConsumerRebalanceListener {
         }
     }
 
-      private void iterateRecordPartitions(ConsumerRecords<String, Object> records) throws Exception {
+    private void iterateRecordPartitions(ConsumerRecords<String, T> records) throws Exception {
         for (TopicPartition partition : records.partitions()) {
             List<Record<Object>> kafkaRecords = new ArrayList<>();
-            List<ConsumerRecord<String, Object>> partitionRecords = records.records(partition);
+            List<ConsumerRecord<String, T>> partitionRecords = records.records(partition);
             iterateConsumerRecords(kafkaRecords, partitionRecords);
             if (!kafkaRecords.isEmpty()) {
                 kafkaSourceBufferAccumulator.writeAllRecordToBuffer(kafkaRecords, buffer, topicConfig);
@@ -95,13 +96,13 @@ public class KafkaSourceCustomConsumer implements ConsumerRebalanceListener {
         }
     }
 
-    private void iterateConsumerRecords(List<Record<Object>> kafkaRecords, List<ConsumerRecord<String, Object>> partitionRecords) {
-        for (ConsumerRecord<String, Object> consumerRecord : partitionRecords) {
+    private void iterateConsumerRecords(List<Record<Object>> kafkaRecords, List<ConsumerRecord<String, T>> partitionRecords) {
+        for (ConsumerRecord<String, T> consumerRecord : partitionRecords) {
             lastReadOffset = kafkaSourceBufferAccumulator.processConsumerRecords(offsetsToCommit, kafkaRecords, lastReadOffset, consumerRecord, partitionRecords);
         }
     }
 
-    private ConsumerRecords<String, Object> poll(final KafkaConsumer<String, Object> consumer) {
+    private ConsumerRecords<String, T> poll(final KafkaConsumer<String, T> consumer) {
         return consumer.poll(Duration.ofMillis(1));
     }
 

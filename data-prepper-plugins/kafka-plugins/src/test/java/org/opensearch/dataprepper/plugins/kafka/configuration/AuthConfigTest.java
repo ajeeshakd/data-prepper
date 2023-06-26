@@ -46,10 +46,10 @@ class AuthConfigTest {
     @Test
     void testConfig() {
         assertThat(authConfig, notNullValue());
-        assertThat(authConfig.getPlainTextAuthConfig(), notNullValue());
-        assertThat(authConfig.getPlainTextAuthConfig(), hasProperty("username"));
-        assertThat(authConfig.getPlainTextAuthConfig(), hasProperty("password"));
-        assertThat(authConfig.getoAuthConfig(), notNullValue());
+        assertThat(authConfig.getAuthMechanismConfig().getPlainTextAuthConfig(), notNullValue());
+        assertThat(authConfig.getAuthMechanismConfig().getPlainTextAuthConfig(), hasProperty("username"));
+        assertThat(authConfig.getAuthMechanismConfig().getPlainTextAuthConfig(), hasProperty("password"));
+        assertThat(authConfig.getAuthMechanismConfig().getoAuthConfig(), notNullValue());
     }
 
 }

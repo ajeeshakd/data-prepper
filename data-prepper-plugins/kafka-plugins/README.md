@@ -15,6 +15,7 @@ log-pipeline:
     kafka:
       bootstrap_servers:
         - 127.0.0.1:9093
+      serde_format: plaintext
       topics:
         - name: my-topic-1
           workers: 10
@@ -36,25 +37,32 @@ log-pipeline:
         - name: my-topic-2
           workers: 10
       schema:
-        registry_url: http://localhost:8081/
-        version: 1
+        registry_url: https://psrc-em82q.us-east-2.aws.confluent.cloud
+        cluster_api_key: PFPRGOHSUOQZGWW4
+        cluster_api_secret: NQCGxb2GSF19rlijA5ySPXFlLbD1PJpx6aGhIebs8IzcfZLyn6DHgCV1ahXXTxkL
+        schema_registry_api_key: GELED3HGEYRXEU6O
+        schema_registry_api_secret: vX3Lh2WwVaElb5c55dDrfvnH5xg1roVuNXr2l3VuIFKRbtpMQbS5iLhi06ZKqC53
       authentication:
-        sasl_plaintext:
-          username: admin
-          password: admin-secret
-        sasl_oauth:
-          oauth_client_id: 0oa9wc21447Pc5vsV5d8
-          oauth_client_secret: aGmOfHqIEvBJGDxXAOOcatiE9PvsPgoEePx8IPPb
-          oauth_login_server: https://dev-1365.okta.com
-          oauth_login_endpoint: /oauth2/default/v1/token
-          oauth_login_grant_type: refresh_token
-          oauth_login_scope: kafka
-          oauth_introspect_server: https://dev-1365.okta.com
-          oauth_introspect_endpoint: /oauth2/default/v1/introspect
-          oauth_sasl_mechanism: OAUTHBEARER
-          oauth_security_protocol: SASL_PLAINTEXT
-          oauth_sasl_login_callback_handler_class: org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
-          oauth_jwks_endpoint_url: https://dev-1365.okta.com/oauth2/default/v1/keys
+        protocol:
+          plaintext: SASL_PLAINTEXT
+          ssl:SASL_SSL
+        mechanism:
+          plain:
+            username: admin
+            password: admin-secret
+          oauth:
+             oauth_client_id: 0oa9wc21447Pc5vsV5d8
+             oauth_client_secret: aGmOfHqIEvBJGDxXAOOcatiE9PvsPgoEePx8IPPb
+             oauth_login_server: https://dev-1365.okta.com
+             oauth_login_endpoint: /oauth2/default/v1/token
+             oauth_login_grant_type: refresh_token
+             oauth_login_scope: kafka
+             oauth_introspect_server: https://dev-1365.okta.com
+             oauth_introspect_endpoint: /oauth2/default/v1/introspect
+             oauth_sasl_mechanism: OAUTHBEARER
+             oauth_security_protocol: SASL_PLAINTEXT
+             oauth_sasl_login_callback_handler_class: org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
+             oauth_jwks_endpoint_url: https://dev-1365.okta.com/oauth2/default/v1/keys
   sink:
     - stdout:
 
@@ -63,6 +71,8 @@ log-pipeline:
 ## Configuration
 
 - `bootstrap_servers` (Required) : It is a host/port to use for establishing the initial connection to the Kafka cluster. Multiple brokers can be configured.
+
+- `serde_format` (Optional) : This denotes the serialization-deserialization data format. It should be configured with the value json or plaintext if the schema registry is not available.
 
 - `topics` (Required) : The topic in which kafka source plugin associated with to read the messages.The maximum number of topics should be 10.
 
@@ -108,13 +118,29 @@ Defaults to `52428800`.
 
 - `version` (Optional) : Deserialize a record key from a bytearray into a String. Defaults to `org.apache.kafka.common.serialization.StringDeserializer`.
 
-### <a name="auth_configuration">Auth Configuration for SASL PLAINTEXT</a>
+- `cluster_api_key` (Optional): An API key is required to connect to your cluster.
+
+- `cluster_api_secret` (Optional): An API secret is required to connect to your cluster.
+
+- `schema_registry_api_key` (Optional): An API key is required to connect to your Schema Registry.
+
+- `schema_registry_api_secret` (Optional): An API secret is required to connect to your Schema Registry.
+
+- `client_dns_lookup` (Optional): This property is needed when DNS aliases are used in the URL. an example for this config value is 'use_all_dns_ips'.
+
+### <a name="auth_configuration">Authentication</a>
+
+- `protocol` (Optional) : An authentication protocol is required to connect with the Kafka broker.It should be PLAINTEXT , SASL_PLAINTEXT or SASL_SSL.
+
+- `mechanism` (Optional) : An authentication mechanism is required to connect with the Kafka broker.It should be 'plain' or 'ouath'.
+
+### <a name="auth_configuration">Configuration for PLAINTEXT</a>
 
 - `username` (Optional) : The username for the Plaintext authentication.
 
 - `password` (Optional) : The password for the Plaintext authentication.
 
-### <a name="auth_configuration">OAuth Configuration for SASLOAUTH</a>
+### <a name="auth_configuration">Configuration for OAUTH</a>
 
 - `oauth_client_id`: It is the client id is the public identifier of your authorization server.
 

@@ -15,10 +15,12 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.connect.json.JsonSerializer;
-import org.junit.Before;
-import org.junit.BeforeClass;
+/*import org.junit.Before;
+import org.junit.BeforeClass;*/
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.ClassRule;
-import org.junit.Test;
+//import org.junit.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -54,12 +56,13 @@ public class JSONConsumerIT {
     @ClassRule
     public static final EmbeddedKafkaClusterSingleNode CLUSTER = new EmbeddedKafkaClusterSingleNode();
 
-    @BeforeClass
-    public static void createTopics() {
+    @BeforeEach
+    public void createTopics() throws Exception {
+        CLUSTER.start();
         CLUSTER.createTopic("test-IT-topic-1");
     }
 
-    @Before
+    @BeforeEach
     public void configure() throws IOException {
         Yaml yaml = new Yaml();
         FileReader fileReader = new FileReader(getClass().getClassLoader().getResource("sample-pipelines-int.yaml").getFile());

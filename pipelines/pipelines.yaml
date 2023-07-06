@@ -1,0 +1,44 @@
+log-pipeline:
+  source:
+    kafka:
+      bootstrap_servers:
+        - localhost:9092
+        #- pkc-ymrq7.us-east-2.aws.confluent.cloud:9092
+      #serde_format: json
+      topics:
+        - name: kafka-json
+          group_id: DPKafkaProj-2
+          workers: 5
+          autocommit: false
+          autocommit_interval: "5s"
+          session_timeout: "45s"
+          max_retry_attempts: 1000
+          max_retry_delay: "1s"
+          auto_offset_reset: earliest
+          thread_waiting_time: 1s
+          max_record_fetch_time: 4s
+          heart_beat_interval: 3s
+          buffer_default_timeout: 5s
+          fetch_max_bytes: 52428800
+          fetch_max_wait: 500
+          fetch_min_bytes: 1
+          retry_backoff: 100s
+          max_poll_interval: 300000s
+          consumer_max_poll_records: 500
+      schema:
+        #registry_url: https://psrc-em82q.us-east-2.aws.confluent.cloud
+       # registry_url: http://localhost:8085
+        #version: 1
+        #cluster_api_key: PFPRGOHSUOQZGWW4
+        #cluster_api_secret: NQCGxb2GSF19rlijA5ySPXFlLbD1PJpx6aGhIebs8IzcfZLyn6DHgCV1ahXXTxkL
+        #schema_registry_api_key: GELED3HGEYRXEU6O
+        #schema_registry_api_secret: vX3Lh2WwVaElb5c55dDrfvnH5xg1roVuNXr2l3VuIFKRbtpMQbS5iLhi06ZKqC53
+        #basic_auth_credentials_source: USER_INFO
+        #client_dns_lookup: use_all_dns_ips
+        #session_timeout_ms: 45000
+        #security_protocol: SASL_SSL #Cloud
+        #security_protocol: PLAINTEXT #local schema registry
+        #sasl_mechanism: PLAIN
+      authentication:
+  sink:
+    - stdout:

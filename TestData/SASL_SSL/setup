@@ -1,0 +1,41 @@
+####################Start one time setup#########################
+
+SET PATH=%PATH%;C:\Program Files\OpenSSL-Win64\bin;
+
+keytool -keystore server.keystore.jks -alias kafka -validity 365 -genkey -keyalg RSA -ext SAN=DNS:localhost,DNS:localhost,DNS:localhost,IP:127.0.0.1,IP:127.0.0.1
+
+openssl req -new -x509 -keyout ca-key -out ca-cert -days 365 -subj /CN=localhost   -extensions san   -config <(echo req; echo distinguished_name=req; echo san; echo subjectAltName = DNS:localhost, IP:127.0.0.1, DNS:localhost, IP:127.0.0.1)
+
+keytool -keystore server.truststore.jks -alias CARoot -import -file ca-cert
+
+keytool -keystore client.truststore.jks -alias CARoot -import -file ca-cert
+
+keytool -keystore server.keystore.jks -alias kafka -certreq -file cert-file -ext SAN=DNS:localhost,DNS:localhost,IP:IP:127.0.0.1
+
+openssl x509 -req   -CA ca-cert -CAkey ca-key -in cert-file -out cert-signed -days 365 -CAcreateserial -passin pass:apoorv
+
+keytool -keystore server.keystore.jks -alias CARoot -import -file ca-cert
+
+keytool -keystore server.keystore.jks -alias kafka -import -file cert-signed.
+
+
+#########################End one time setup########################
+
+#start zookeeper
+SET KAFKA_OPTS=-Djava.security.auth.login.config=D:\kafka\kafka_2.13-3.4.1\config\zookeeper_jaas.conf
+D:\zookeeper\apache-zookeeper-3.8.1-bin\bin\zkServer.cmd D:\kafka\kafka_2.13-3.4.1\config\zookeeper_sasl_ssl.properties
+
+# start broker 
+SET KAFKA_OPTS=-Djava.security.auth.login.config=D:\kafka\kafka_2.13-3.4.1\config\kafka_server_sasl_ssl_jaas.conf
+D:\kafka\kafka_2.13-3.4.1\bin\windows\kafka-server-start.bat D:\kafka\kafka_2.13-3.4.1\config\server_sasl_ssl.properties
+
+
+# create topic-quickstart
+D:\kafka\kafka_2.13-3.4.1\bin\windows\kafka-topics.bat --bootstrap-server localhost:9092 --create --topic quickstart --command-config D:\kafka\kafka_2.13-3.4.1\config\command_config_sasl_ssl.conf
+
+# start console producer
+D:\kafka\kafka_2.13-3.4.1\bin\windows\kafka-console-producer.bat --bootstrap-server localhost:9092 --topic quickstart --producer.config D:\kafka\kafka_2.13-3.4.1\config\command_config_sasl_ssl.conf
+
+# start console consumer
+D:\kafka\kafka_2.13-3.4.1\bin\windows\kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic quickstart --from-beginning --consumer.config D:\kafka\kafka_2.13-3.4.1\config\command_config_sasl_ssl.conf
+

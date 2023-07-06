@@ -1,0 +1,25 @@
+# export kafka_opts
+set KAFKA_OPTS=-Djava.security.auth.login.config=D:\kafka\kafka_2.13-3.4.1\config\kafka_server_sasl_oauth_jaas.conf
+set KAFKA_OPTS=%KAFKA_OPTS% -DclientId=0oa9wc21447Pc5vsV5d7
+set KAFKA_OPTS=%KAFKA_OPTS% -DOAUTH_WITH_SSL=true
+set KAFKA_OPTS=%KAFKA_OPTS% -DOAUTH_LOGIN_SERVER=https://dev-13650048.okta.com
+set KAFKA_OPTS=%KAFKA_OPTS% -DOAUTH_LOGIN_ENDPOINT=/oauth2/default/v1/token
+set KAFKA_OPTS=%KAFKA_OPTS% -DOAUTH_LOGIN_GRANT_TYPE=0oa9wc21447Pc5vsV5d7
+set KAFKA_OPTS=%KAFKA_OPTS% -DOAUTH_LOGIN_SCOPE=kafka
+set KAFKA_OPTS=%KAFKA_OPTS% -DOAUTH_CHECK_AUDIENCE=false
+set KAFKA_OPTS=%KAFKA_OPTS% -DOAUTH_INTROSPECT_SERVER=https://dev-13650048.okta.com
+set KAFKA_OPTS=%KAFKA_OPTS% -DOAUTH_INTROSPECT_ENDPOINT=/oauth2/default/v1/introspect
+set KAFKA_OPTS=%KAFKA_OPTS% -DOAUTH_AUTHORIZATION=Basic%20MG9hOXdjMjE0NDdQYzV2c1Y1ZDc6YUdtT2ZIcUlFdkJKR0R4WEFPT2NhdGlFOVB2c1Bnb0VlUHg4SVBQYQ== 
+set KAFKA_OPTS=%KAFKA_OPTS% -DOAUTH_INTROSPECT_AUTHORIZATION=Basic%20MG9hOXdjMjE0NDdQYzV2c1Y1ZDc6YUdtT2ZIcUlFdkJKR0R4WEFPT2NhdGlFOVB2c1Bnb0VlUHg4SVBQYQ==
+
+# start broker 
+D:\kafka\kafka_2.13-3.4.1\bin\windows\kafka-server-start.bat D:\kafka\kafka_2.13-3.4.1\config\server_sasl_oauth.properties
+
+# create topic-quickstart
+D:\kafka\kafka_2.13-3.4.1\bin\windows\kafka-topics.bat --bootstrap-server localhost:9093 --create --topic quickstart --command-config D:\kafka\kafka_2.13-3.4.1\config\command_config_sasl_oauth.conf
+
+# start console producer
+D:\kafka\kafka_2.13-3.4.1\bin\windows\kafka-console-producer.bat --bootstrap-server localhost:9093 --topic quickstart --producer.config D:\kafka\kafka_2.13-3.4.1\config\command_config_sasl_oauth.conf
+
+# start console consumer
+D:\kafka\kafka_2.13-3.4.1\bin\windows\kafka-console-consumer.bat --bootstrap-server localhost:9093 --topic quickstart --from-beginning --consumer.config D:\kafka\kafka_2.13-3.4.1\config\command_config_sasl_oauth.conf

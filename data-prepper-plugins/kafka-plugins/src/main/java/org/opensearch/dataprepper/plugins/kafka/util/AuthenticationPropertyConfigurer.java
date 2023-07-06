@@ -4,6 +4,7 @@
  */
 package org.opensearch.dataprepper.plugins.kafka.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
 
 import java.util.Base64;
@@ -57,6 +58,7 @@ public class AuthenticationPropertyConfigurer {
 
     public static void setOauthProperties(final KafkaSourceConfig KafkaSourceConfig,
                                           final Properties properties) {
+        String securityProtocol= "";
         String oauthClientId = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthClientId();
         String oauthClientSecret = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthClientSecret();
         String oauthLoginServer = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthLoginServer();
@@ -67,7 +69,11 @@ public class AuthenticationPropertyConfigurer {
         String oauthIntrospectEndpoint = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthIntrospectEndpoint();
         String tokenEndPointURL = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthTokenEndpointURL();
         String saslMechanism = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslMechanism();
-        String securityProtocol = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSecurityProtocol();
+        if(StringUtils.isNotEmpty(KafkaSourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext())) {
+            securityProtocol= KafkaSourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext();
+        }else if(StringUtils.isNotEmpty(KafkaSourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl())){
+            securityProtocol= KafkaSourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl();
+        }
         String loginCallBackHandler = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslLoginCallbackHandlerClass();
         String oauthJwksEndpointURL = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthJwksEndpointURL();
         String introspectServer = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthIntrospectServer();

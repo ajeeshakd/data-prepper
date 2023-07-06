@@ -81,7 +81,7 @@ class KafkaSourceBufferAccumulatorTest {
 	@Test
 	void testWriteEventOrStringToBuffer_plaintext_schemaType() throws Exception {
 		createObjectWithSchemaType("plaintext");
-		buffer = new KafkaSourceBufferAccumulator<>(topicConfig, sourceConfig, "plaintext", pluginMetrics);
+		buffer = new KafkaSourceBufferAccumulator<>(topicConfig,"plaintext", pluginMetrics);
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
 		doCallRealMethod().when(spyBuffer).getEventRecord("anyString");
 		spyBuffer.getEventRecord("anyString");
@@ -93,7 +93,7 @@ class KafkaSourceBufferAccumulatorTest {
 	void testWriteEventOrStringToBuffer_json_schemaType() throws Exception {
 		String json = "{\"writebuffer\":\"true\",\"buffertype\":\"json\"}";
 		createObjectWithSchemaType("json"); //Added By Mehak
-		buffer = new KafkaSourceBufferAccumulator<>(topicConfig, sourceConfig, "json", pluginMetrics);
+		buffer = new KafkaSourceBufferAccumulator<>(topicConfig,  "json", pluginMetrics);
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
 		doCallRealMethod().when(spyBuffer).getEventRecord(json);
 		spyBuffer.getEventRecord(json);
@@ -104,7 +104,7 @@ class KafkaSourceBufferAccumulatorTest {
 	@Test
 	void testWriteEventOrStringToBuffer_json_schemaType_catch_block() throws Exception {
 		createObjectWithSchemaType("json");
-		buffer = new KafkaSourceBufferAccumulator<>(topicConfig, sourceConfig, "json", pluginMetrics);
+		buffer = new KafkaSourceBufferAccumulator<>(topicConfig,  "json", pluginMetrics);
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
 		doCallRealMethod().when(spyBuffer).getEventRecord("anyString");
 		spyBuffer.getEventRecord("anyString");
@@ -115,7 +115,7 @@ class KafkaSourceBufferAccumulatorTest {
 	@Test
 	void testWriteEventOrStringToBuffer_plaintext_schemaType_catch_block() throws Exception {
 		createObjectWithSchemaType("plaintext");
-		buffer = new KafkaSourceBufferAccumulator<>(topicConfig, sourceConfig, "plaintext", pluginMetrics);
+		buffer = new KafkaSourceBufferAccumulator<>(topicConfig, "plaintext", pluginMetrics);
 		KafkaSourceBufferAccumulator<String, String> spyBuffer = spy(buffer);
 		doCallRealMethod().when(spyBuffer).getEventRecord(null);
 		spyBuffer.getEventRecord(null);

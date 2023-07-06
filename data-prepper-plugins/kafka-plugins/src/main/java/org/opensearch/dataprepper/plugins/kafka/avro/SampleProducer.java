@@ -1,10 +1,9 @@
 package org.opensearch.dataprepper.plugins.kafka.avro;
 
 
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,17 +28,22 @@ public class SampleProducer {
     }
 
     public static void main(String args[]) throws IOException, InterruptedException {
+
         final Properties props = loadConfig("D:\\Projects\\kafka-source-demo\\data-prepper\\data-prepper-plugins\\kafka-plugins\\src\\main\\java\\org\\opensearch\\dataprepper\\plugins\\kafka\\avro\\client.properties");
         props.put("key.serializer", StringSerializer.class);
-        //props.put("value.serializer", KafkaAvroSerializer.class);
         props.put("value.serializer", StringSerializer.class);
         Producer<String, String> producer = new KafkaProducer<>(props);
-        for(int i=0;i<10000;i++) {
-            producer.send(new ProducerRecord<>("kafka-topic", "key-" + i, "value" + i));
+        for (int i = 0; i < 10000; i++) {
+            JSONObject json = new JSONObject();
+            json.put("name", "Name:" + i);
+            producer.send(new ProducerRecord<>("topic-json", json.toString()));
+            //producer.send(new ProducerRecord<>("kafka-topic", "key-" + i, ""+i));
             Thread.sleep(200);
-            System.out.println("Sent Record : " + i);
+            System.out.println("Sent Record : " + json.toString());
         }
         producer.close();
     }
 }
+
+
 

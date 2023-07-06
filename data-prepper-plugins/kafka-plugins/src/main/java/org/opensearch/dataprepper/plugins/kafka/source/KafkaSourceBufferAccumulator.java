@@ -17,7 +17,6 @@ import org.opensearch.dataprepper.model.buffer.Buffer;
 import org.opensearch.dataprepper.model.event.Event;
 import org.opensearch.dataprepper.model.log.JacksonLog;
 import org.opensearch.dataprepper.model.record.Record;
-import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
 import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
 import org.opensearch.dataprepper.plugins.kafka.util.MessageFormat;
 import org.slf4j.Logger;
@@ -46,10 +45,7 @@ public class KafkaSourceBufferAccumulator<K, V> {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaSourceBufferAccumulator.class);
     private static final String MESSAGE_KEY = "message";
     private final TopicConfig topicConfig;
-    private final KafkaSourceConfig kafkaSourceConfig;
     private final String schemaType;
-    private PluginMetrics pluginMetrics;
-    private static final String KAFKA_CONSUMER_BUFFER_WRITE_ERROR = "kafkaConsumerBufferWriteError";
     private static final int MAX_FLUSH_RETRIES_ON_IO_EXCEPTION = Integer.MAX_VALUE;
     private static final Duration INITIAL_FLUSH_RETRY_DELAY_ON_IO_EXCEPTION = Duration.ofSeconds(5);
     private final JsonFactory jsonFactory = new JsonFactory();
@@ -57,12 +53,9 @@ public class KafkaSourceBufferAccumulator<K, V> {
     private static final Long COMMIT_OFFSET_INTERVAL_MILLI_SEC = 300000L;
 
     public KafkaSourceBufferAccumulator(final TopicConfig topicConfigs,
-                                        final KafkaSourceConfig kafkaSourceConfig,
                                         final String schemaType, PluginMetrics pluginMetric) {
-        this.kafkaSourceConfig = kafkaSourceConfig;
         this.topicConfig = topicConfigs;
         this.schemaType = schemaType;
-        this.pluginMetrics = pluginMetric;
     }
 
     public Record<Object> getEventRecord(final String line) {

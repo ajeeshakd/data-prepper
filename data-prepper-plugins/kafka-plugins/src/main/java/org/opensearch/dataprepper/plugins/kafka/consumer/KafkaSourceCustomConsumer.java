@@ -34,18 +34,19 @@ public class KafkaSourceCustomConsumer<T> implements ConsumerRebalanceListener {
     private Map<TopicPartition, OffsetAndMetadata> offsetsToCommit = new HashMap<>();
     private long lastReadOffset = 0L;
     private volatile long lastCommitTime = System.currentTimeMillis();
-    private KafkaConsumer<String, T> consumer= null;
+    private KafkaConsumer<String, T> consumer = null;
     private AtomicBoolean status = new AtomicBoolean(false);
-    private Buffer<Record<Object>> buffer= null;
+    private Buffer<Record<Object>> buffer = null;
     private TopicConfig topicConfig = null;
-    private KafkaSourceConfig kafkaSourceConfig= null;
-    private PluginMetrics pluginMetrics= null;
-    private String schemaType= null;
+    private KafkaSourceConfig kafkaSourceConfig = null;
+    private PluginMetrics pluginMetrics = null;
+    private String schemaType = null;
 
     public KafkaSourceCustomConsumer() {
     }
 
-    private KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator= null;
+    private KafkaSourceBufferAccumulator kafkaSourceBufferAccumulator = null;
+
     public KafkaSourceCustomConsumer(KafkaConsumer consumer,
                                      AtomicBoolean status,
                                      Buffer<Record<Object>> buffer,
@@ -60,7 +61,7 @@ public class KafkaSourceCustomConsumer<T> implements ConsumerRebalanceListener {
         this.kafkaSourceConfig = kafkaSourceConfig;
         this.schemaType = schemaType;
         this.pluginMetrics = pluginMetrics;
-        kafkaSourceBufferAccumulator=   new KafkaSourceBufferAccumulator(topicConfig, kafkaSourceConfig,
+        kafkaSourceBufferAccumulator = new KafkaSourceBufferAccumulator(topicConfig,
                 schemaType, pluginMetrics);
     }
 
@@ -73,10 +74,9 @@ public class KafkaSourceCustomConsumer<T> implements ConsumerRebalanceListener {
                 offsetsToCommit.clear();
                 ConsumerRecords<String, T> records = poll(consumer);
                 if (!records.isEmpty() && records.count() > 0) {
-                    System.out.println("\tRecord is not EMPTY======== Size :"+records.count());
                     iterateRecordPartitions(records);
                 }
-            }while (!status.get());
+            } while (!status.get());
         } catch (Exception exp) {
             LOG.error("Error while reading the records from the topic...", exp);
         }
@@ -106,17 +106,6 @@ public class KafkaSourceCustomConsumer<T> implements ConsumerRebalanceListener {
         return consumer.poll(Duration.ofMillis(1));
     }
 
-    public void closeConsumer(){
-        if(consumer != null) {
-            consumer.close();
-        }
-    }
-
-    public void shutdownConsumer(){
-        if(consumer != null) {
-            consumer.wakeup();
-        }
-    }
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
         for (TopicPartition partition : partitions) {

@@ -77,7 +77,7 @@ class KafkaSourceConfigTest {
 	@Test
 	void test_setters(){
 		kafkaSourceConfig = new KafkaSourceConfig();
-		kafkaSourceConfig.setBootStrapServers(new ArrayList<>(Arrays.asList("127.0.0.1:9092")));
+		//kafkaSourceConfig.setBootStrapServers(new ArrayList<>(Arrays.asList("127.0.0.1:9092")));
 		TopicConfig topicConfig = mock(TopicConfig.class);
 		kafkaSourceConfig.setTopics(Collections.singletonList(topicConfig));
 

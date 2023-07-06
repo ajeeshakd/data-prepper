@@ -29,78 +29,70 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @SuppressWarnings("deprecation")
 public class MultithreadedConsumer implements Runnable {
-	//private KafkaConsumer<String, String> plainTextConsumer = null;
-	//private KafkaConsumer<String, JsonNode> jsonConsumer = null;
-	//private KafkaConsumer<String, GenericRecord> avroConsumer = null;
-	private static final Logger LOG = LoggerFactory.getLogger(MultithreadedConsumer.class);
-	private final AtomicBoolean status = new AtomicBoolean(false);
-	private final KafkaSourceConfig sourceConfig;
-	private final TopicConfig topicConfig;
-	private final Buffer<Record<Object>> buffer;
-	private final KafkaSourceCustomConsumer customConsumer= new KafkaSourceCustomConsumer();
-	private String consumerId;
-	private String consumerGroupId;
-	private String schemaType;
-	private Properties consumerProperties;
-	private PluginMetrics pluginMetrics;
+    private static final Logger LOG = LoggerFactory.getLogger(MultithreadedConsumer.class);
+    private final AtomicBoolean status = new AtomicBoolean(false);
+    private final KafkaSourceConfig sourceConfig;
+    private final TopicConfig topicConfig;
+    private final Buffer<Record<Object>> buffer;
+    private String consumerId;
+    private String consumerGroupId;
+    private String schemaType;
+    private Properties consumerProperties;
+    private PluginMetrics pluginMetrics;
+    private KafkaConsumer consumer;
+    public MultithreadedConsumer(String consumerId,
+                                 String consumerGroupId,
+                                 Properties properties,
+                                 TopicConfig topicConfig,
+                                 KafkaSourceConfig sourceConfig,
+                                 Buffer<Record<Object>> buffer,
+                                 PluginMetrics pluginMetric,
+                                 String schemaType) {
+        this.consumerProperties = Objects.requireNonNull(properties);
+        this.consumerId = consumerId;
+        this.consumerGroupId = consumerGroupId;
+        this.sourceConfig = sourceConfig;
+        this.topicConfig = topicConfig;
+        this.buffer = buffer;
+        this.schemaType = schemaType;
+        this.pluginMetrics = pluginMetric;
+    }
 
-	public MultithreadedConsumer(String consumerId,
-								 String consumerGroupId,
-								 Properties properties,
-								 TopicConfig topicConfig,
-								 KafkaSourceConfig sourceConfig,
-								 Buffer<Record<Object>> buffer,
-								 PluginMetrics pluginMetric,
-								 String schemaType) {
-		this.consumerProperties = Objects.requireNonNull(properties);
-		this.consumerId = consumerId;
-		this.consumerGroupId = consumerGroupId;
-		this.sourceConfig = sourceConfig;
-		this.topicConfig = topicConfig;
-		this.buffer = buffer;
-		this.schemaType = schemaType;
-		this.pluginMetrics = pluginMetric;
-		//this.jsonConsumer = new KafkaConsumer<>(consumerProperties);
-		//this.plainTextConsumer = new KafkaConsumer<>(consumerProperties);
-		//this.avroConsumer = new KafkaConsumer<>(consumerProperties);
+    @SuppressWarnings({"unchecked"})
+    @Override
+    public void run() {
+        LOG.info("Consumer group : {} and Consumer : {} executed on : {}", consumerGroupId, consumerId, LocalDateTime.now());
+        try {
+            MessageFormat schema = MessageFormat.getByMessageFormatByName(schemaType);
+            switch (schema) {
+                case JSON:
+                    this.consumer = new KafkaConsumer<String, JsonNode>(consumerProperties);
+                    break;
+                case AVRO:
+                    this.consumer = new KafkaConsumer<String, GenericRecord>(consumerProperties);
+                    break;
+                case PLAINTEXT:
+                default:
+                    this.consumer = new KafkaConsumer<String, String>(consumerProperties);
+                    break;
+            }
+            new KafkaSourceCustomConsumer(consumer, status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
+        } catch (Exception exp) {
+            if (exp.getCause() instanceof WakeupException && !status.get()) {
+                LOG.error("Error reading records from the topic...{}", exp.getMessage());
+            }
+        } finally {
+            LOG.info("Closing the consumer... {}", consumerId);
+            closeConsumers();
+        }
+    }
 
-	}
+    private void closeConsumers() {
+        consumer.close();
+    }
 
-	@SuppressWarnings({ "unchecked" })
-	@Override
-	public void run() {
-		LOG.info("Consumer group : {} and Consumer : {} executed on : {}",consumerGroupId, consumerId,  LocalDateTime.now());
-		try {
-			MessageFormat schema = MessageFormat.getByMessageFormatByName(schemaType);
-			switch(schema){
-				case JSON:
-					new KafkaSourceCustomConsumer(new KafkaConsumer<String, JsonNode>(consumerProperties), status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
-					break;
-				case AVRO:
-					new KafkaSourceCustomConsumer(new KafkaConsumer<String, GenericRecord>(consumerProperties), status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
-					break;
-				case PLAINTEXT:
-				default:
-					new KafkaSourceCustomConsumer(new KafkaConsumer<String,String>(consumerProperties), status, buffer, topicConfig, sourceConfig, schemaType, pluginMetrics).consumeRecords();
-					break;
-			}
-
-		} catch (Exception exp) {
-			if (exp.getCause() instanceof WakeupException && !status.get()) {
-				LOG.error("Error reading records from the topic...{}", exp.getMessage());
-			}
-		} finally {
-			LOG.info("Closing the consumer... {}", consumerId);
-			closeConsumers();
-		}
-	}
-
-	private void closeConsumers() {
-		customConsumer.closeConsumer();
-	}
-
-	public void shutdownConsumer() {
-		status.set(false);
-		customConsumer.shutdownConsumer();
-	}
+    public void shutdownConsumer() {
+        status.set(false);
+        consumer.wakeup();
+    }
 }

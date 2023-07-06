@@ -24,10 +24,17 @@ public class KafkaSourceConfig {
   @JsonProperty("bootstrap_servers")
   @NotNull
   @Size(min = 1, message = "Bootstrap servers can't be empty")
-  private List<String> bootStrapServers;
+  private List<String> bootStrapServer;
 
+  @JsonProperty("cluster_api_key")
+  private String clusterApiKey;
+  @JsonProperty("cluster_api_secret")
+  private String clusterApiSecret;
   @JsonProperty("serde_format")
   private String serdeFormat;
+
+  @JsonProperty("client_dns_lookup")
+  private String clientDnsLookup;
 
     @JsonProperty("topics")
     @NotNull
@@ -41,8 +48,24 @@ public class KafkaSourceConfig {
   @JsonProperty("authentication")
   private AuthConfig authConfig;
 
+  public String getClusterApiKey() {
+    return clusterApiKey;
+  }
+
+  public String getClusterApiSecret() {
+    return clusterApiSecret;
+  }
+
+  public List<String> getBootStrapServers() {
+    return bootStrapServer;
+  }
+
   public String getSerdeFormat() {
     return serdeFormat;
+  }
+
+  public String getClientDnsLookup() {
+    return clientDnsLookup;
   }
 
   public List<TopicConfig> getTopics() {
@@ -52,14 +75,6 @@ public class KafkaSourceConfig {
     public void setTopics(List<TopicConfig> topics) {
         this.topics = topics;
     }
-
-  public List<String> getBootStrapServers() {
-    return bootStrapServers;
-  }
-
-  public void setBootStrapServers(List<String> bootStrapServers) {
-    this.bootStrapServers = bootStrapServers;
-  }
 
   public SchemaConfig getSchemaConfig() {
     return schemaConfig;

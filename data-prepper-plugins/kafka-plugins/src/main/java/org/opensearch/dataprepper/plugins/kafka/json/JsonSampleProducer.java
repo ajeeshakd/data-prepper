@@ -25,7 +25,7 @@ public class JsonSampleProducer {
             JSONObject json = new JSONObject();
             json.put("name", "Name:" + i);
 
-            ProducerRecord<String, String> record = new ProducerRecord<>("topic-json", json.toString());
+            ProducerRecord<String, String> record = new ProducerRecord<>("kafka-json", json.toString());
 
             producer.send(record, new Callback() {
                 @Override

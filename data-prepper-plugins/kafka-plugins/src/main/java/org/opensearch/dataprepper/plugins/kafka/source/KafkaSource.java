@@ -7,9 +7,9 @@ package org.opensearch.dataprepper.plugins.kafka.source;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
-import io.micrometer.core.instrument.Counter;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.opensearch.dataprepper.metrics.PluginMetrics;
 import org.opensearch.dataprepper.model.annotations.DataPrepperPlugin;
@@ -37,6 +37,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,22 +55,12 @@ public class KafkaSource implements Source<Record<Object>> {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaSource.class);
     private final KafkaSourceConfig sourceConfig;
     private ExecutorService executorService;
-    private static final String KAFKA_WORKER_THREAD_PROCESSING_ERRORS = "kafkaWorkerThreadProcessingErrors";
-    private final Counter kafkaWorkerThreadProcessingErrors;
     private final PluginMetrics pluginMetrics;
     private String consumerGroupID;
     private MultithreadedConsumer multithreadedConsumer;
     private int totalWorkers;
     private String pipelineName;
-    private static String schemaType = "";
-    private static final String INSTROSPECT_SERVER_DETAILS = " OAUTH_INTROSPECT_SERVER='"
-            + "%s" + "' OAUTH_INTROSPECT_ENDPOINT='" + "%s" + "' " +
-            "OAUTH_INTROSPECT_AUTHORIZATION='Basic " + "%s";
-
-    private static final String OAUTH_JAAS_CONFIG = "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required clientId='"
-            + "%s" + "' clientSecret='" + "%s" + "' scope='" + "%s" + "' OAUTH_LOGIN_SERVER='" + "%s" +
-            "' OAUTH_LOGIN_ENDPOINT='" + "%s" + "' OAUT_LOGIN_GRANT_TYPE=" + "%s" +
-            " OAUTH_LOGIN_SCOPE=%s OAUTH_AUTHORIZATION='Basic " + "%s" + "';";
+    private String schemaType = MessageFormat.PLAINTEXT.toString();
 
     @DataPrepperPluginConstructor
     public KafkaSource(final KafkaSourceConfig sourceConfig, final PluginMetrics pluginMetrics,
@@ -77,44 +68,30 @@ public class KafkaSource implements Source<Record<Object>> {
         this.sourceConfig = sourceConfig;
         this.pluginMetrics = pluginMetrics;
         this.pipelineName = pipelineDescription.getPipelineName();
-        this.kafkaWorkerThreadProcessingErrors = pluginMetrics.counter(KAFKA_WORKER_THREAD_PROCESSING_ERRORS);
     }
 
     @Override
     public void start(Buffer<Record<Object>> buffer) {
-        //TODO Ajeesh: All properties should be executes once except topic properties---- Need to make the code changes
         Properties consumerProperties = new Properties();
         setConsumerProperties(consumerProperties);
         sourceConfig.getTopics().forEach(topic -> {
             totalWorkers = 0;
             try {
-                setConsumerTopicProperties(consumerProperties,topic);
                 totalWorkers = topic.getWorkers();
                 consumerGroupID = getGroupId(topic.getName());
                 executorService = Executors.newFixedThreadPool(totalWorkers);
+                setConsumerTopicProperties(consumerProperties, topic);
                 IntStream.range(0, totalWorkers + 1).forEach(index -> {
                     String consumerId = consumerGroupID + "::" + Integer.toString(index + 1);
                     multithreadedConsumer = new MultithreadedConsumer(consumerId,
-                            consumerGroupID, consumerProperties, topic, sourceConfig, buffer, pluginMetrics, sourceConfig.getSerdeFormat());
+                            consumerGroupID, consumerProperties, topic, sourceConfig, buffer, pluginMetrics, schemaType);
                     executorService.submit(multithreadedConsumer);
                 });
             } catch (Exception e) {
                 LOG.error("Failed to setup the Kafka Source Plugin.", e);
-                throw new RuntimeException();
+                throw new RuntimeException("Failed to setup Kafka Source Plugin...");
             }
         });
-    }
-
-    private void setConsumerTopicProperties(Properties properties, TopicConfig topicConfig) {
-        properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG,
-                topicConfig.getAutoCommitInterval().toSecondsPart());
-        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
-                topicConfig.getAutoOffsetReset());
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, sourceConfig.getBootStrapServers());
-        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,
-                topicConfig.getAutoCommit());
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, topicConfig.getGroupId());
-        setConsumerOptionalProperties(properties, topicConfig);
     }
 
     @Override
@@ -152,89 +129,68 @@ public class KafkaSource implements Source<Record<Object>> {
     }
 
     private void setConsumerProperties(Properties properties) {
-        //Properties properties = new Properties();
+        if (StringUtils.isNotEmpty(sourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext())) {
+            //protocol = sourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext();
+        } else if (StringUtils.isNotEmpty(sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl())) {
+            //protocol = sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl();
+        }
         setBoostStrapServerProperties(properties);
         setSchemaRegistryProperties(properties);
         setAuthenticationProperties(properties);
-
         LOG.info("Starting consumer with the properties : {}", properties);
-        //==============================================
-       /* properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG,
-                topicConfig.getAutoCommitInterval().toSecondsPart());
-        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
-                topicConfig.getAutoOffsetReset());
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, sourceConfig.getBootStrapServers());
-        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,
-                topicConfig.getAutoCommit());
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, topicConfig.getGroupId());
-        setConsumerOptionalProperties(properties, topicConfig);*/
-        /*if (sourceConfig.getAuthConfig() != null && sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
-            setPropertiesForPlainTextAuth(properties);
-        } else if (sourceConfig.getAuthConfig() != null && sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig() != null) {
-            setPropertiesForOAuth(properties);
-        }*/
-        //schemaType = getSchemaType(sourceConfig.getSchemaConfig().getRegistryURL(), topicConfig.getName(), sourceConfig.getSchemaConfig().getVersion());
-        /*if (schemaType.isEmpty()) {
-            schemaType = MessageFormat.PLAINTEXT.toString();
-        }*/
-       /* System.out.println("\n\tSchema Type===========================>" + schemaType);
-        if (sourceConfig.getSchemaConfig() != null) {
-            setPropertiesForSchemaType(properties);
-        } else {
-            setPropertiesForPlaintextAndJsonWithoutSchemaRegistry(properties);
-        }
-        if (sourceConfig.getSchemaConfig() != null) {
-            setPropertiesForSchemaRegistryConnectivity(properties);
-        }
-        LOG.info("Starting consumer with the properties : {}", properties);*/
-        //return properties;
     }
 
     private void setAuthenticationProperties(Properties properties) {
         if (sourceConfig.getAuthConfig() != null && sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
-            AuthenticationPropertyConfigurer.setSaslPlainTextProperties(sourceConfig,properties);
+            AuthenticationPropertyConfigurer.setSaslPlainTextProperties(sourceConfig, properties);
         } else if (sourceConfig.getAuthConfig() != null && sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig() != null) {
-            AuthenticationPropertyConfigurer.setOauthProperties(sourceConfig,properties);
+            AuthenticationPropertyConfigurer.setOauthProperties(sourceConfig, properties);
         }
     }
 
     private void setSchemaRegistryProperties(Properties properties) {
-        if (sourceConfig.getSchemaConfig() != null) {
+        if (sourceConfig.getSchemaConfig() != null && StringUtils.isNotEmpty(sourceConfig.getSchemaConfig().getRegistryURL())) {
             setPropertiesForSchemaType(properties);
-        } else {
-            setPropertiesForPlaintextAndJsonWithoutSchemaRegistry(properties);
-        }
-        if (sourceConfig.getSchemaConfig() != null) {
             setPropertiesForSchemaRegistryConnectivity(properties);
+        } else if (sourceConfig.getSchemaConfig() == null) {
+            setPropertiesForPlaintextAndJsonWithoutSchemaRegistry(properties);
         }
     }
 
     private void setBoostStrapServerProperties(Properties properties) {
+        String clusterApiKey = sourceConfig.getClusterApiKey();
+        String clusterApiSecret = sourceConfig.getClusterApiSecret();
+        if (StringUtils.isNotEmpty(clusterApiKey) && StringUtils.isNotEmpty(clusterApiSecret)) {
+            properties.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username='" + clusterApiKey + "' password='" + clusterApiSecret + "';");
+        }
+        if (StringUtils.isNotEmpty(sourceConfig.getClientDnsLookup())) {
+            properties.put("client.dns.lookup", sourceConfig.getClientDnsLookup());
+        }
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, sourceConfig.getBootStrapServers());
     }
 
     private void setPropertiesForPlaintextAndJsonWithoutSchemaRegistry(Properties properties) {
+        Optional<String> schema = Optional.of(Optional.ofNullable(sourceConfig.getSerdeFormat()).orElse(MessageFormat.PLAINTEXT.toString()));
+        schemaType = schema.get();
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
                 StringDeserializer.class);
-        if (sourceConfig.getSerdeFormat().equalsIgnoreCase(MessageFormat.JSON.toString())) {
+        if (schemaType.equalsIgnoreCase(MessageFormat.JSON.toString())) {
             properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaSourceJsonDeserializer.class);
-            System.out.println("\n\tNo Schema Registry... Inside JSON===========================>"+schemaType);
-        } else if (sourceConfig.getSerdeFormat().equalsIgnoreCase(MessageFormat.PLAINTEXT.toString())) {
+        } else if (schemaType.equalsIgnoreCase(MessageFormat.PLAINTEXT.toString())) {
             properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                     StringDeserializer.class);
-            System.out.println("\n\tNo Schema Registry... Inside PLAINTEXT===========================>"+schemaType);
         }
     }
 
     private void setPropertiesForSchemaType(Properties properties) {
+        Optional<String> schema = Optional.of(Optional.ofNullable(sourceConfig.getSerdeFormat()).orElse(MessageFormat.PLAINTEXT.toString()));
+        schemaType = schema.get();
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, getSchemaRegistryUrl());
-        properties.put(KafkaAvroDeserializerConfig.AUTO_REGISTER_SCHEMAS, false);
-        //TODO: remove the below line
-        properties.put("security.protocol", "PLAINTEXT"); //need to remove
-        if ( sourceConfig.getSerdeFormat().equalsIgnoreCase(MessageFormat.JSON.toString())) {
+        //properties.put(KafkaAvroDeserializerConfig.AUTO_REGISTER_SCHEMAS, false);
+        if (schemaType.equalsIgnoreCase(MessageFormat.JSON.toString())) {
             properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer");
-        } else if (sourceConfig.getSerdeFormat().equalsIgnoreCase(MessageFormat.AVRO.toString())) {
+        } else if (schemaType.equalsIgnoreCase(MessageFormat.AVRO.toString())) {
             properties.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
             properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                     "io.confluent.kafka.serializers.KafkaAvroDeserializer");
@@ -244,76 +200,72 @@ public class KafkaSource implements Source<Record<Object>> {
         }
     }
 
+    private void setConsumerTopicProperties(Properties properties, TopicConfig topicConfig) {
+        properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG,
+                topicConfig.getAutoCommitInterval().toSecondsPart());
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
+                topicConfig.getAutoOffsetReset());
+        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, sourceConfig.getBootStrapServers());
+        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,
+                topicConfig.getAutoCommit());
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupID);
+        //setConsumerOptionalProperties(properties, topicConfig);
+    }
+
+    private void setConsumerOptionalProperties(Properties properties, TopicConfig topicConfig) {
+        properties.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, topicConfig.getSessionTimeOut());
+        properties.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, topicConfig.getHeartBeatInterval());
+        properties.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, topicConfig.getFetchMaxBytes());
+        properties.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, topicConfig.getFetchMaxWait());
+        properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, topicConfig.getMaxPollInterval());
+        properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, topicConfig.getConsumerMaxPollRecords());
+    }
+
+    private void setPropertiesForSchemaRegistryConnectivity(Properties properties) {
+        String schemaRegistryApiKey = sourceConfig.getSchemaConfig().getSchemaRegistryApiKey();
+        String schemaRegistryApiSecret = sourceConfig.getSchemaConfig().getSchemaRegistryApiSecret();
+        if (StringUtils.isNotEmpty(schemaRegistryApiKey) && StringUtils.isNotEmpty(schemaRegistryApiSecret)) {
+            String basicAuthUserInfo = schemaRegistryApiKey.concat(":").concat(schemaRegistryApiSecret);
+            properties.put("basic.auth.user.info", basicAuthUserInfo);
+        }
+        if (StringUtils.isNotEmpty(sourceConfig.getSchemaConfig().getSaslMechanism())) {
+            properties.put("sasl.mechanism", sourceConfig.getSchemaConfig().getSaslMechanism());
+        }
+        if (StringUtils.isNotEmpty(sourceConfig.getSchemaConfig().getSecurityProtocol())) {
+            properties.put("security.protocol", sourceConfig.getSchemaConfig().getSecurityProtocol());
+        }
+        if (StringUtils.isNotEmpty(sourceConfig.getSchemaConfig().getBasicAuthCredentialsSource())) {
+            properties.put("basic.auth.credentials.source", sourceConfig.getSchemaConfig().getBasicAuthCredentialsSource());
+        }
+        properties.put("session.timeout.ms", sourceConfig.getSchemaConfig().getSessionTimeoutms());
+    }
+
     private static boolean validateURL(String url) {
         try {
             URI uri = new URI(url);
             if (uri.getScheme() == null || uri.getHost() == null) {
                 return false;
             }
-            return true;
+
         } catch (URISyntaxException ex) {
             LOG.error("Invalid Schema Registry URI: ", ex);
             return false;
         }
+        return true;
     }
 
     private String getSchemaRegistryUrl() {
-        return sourceConfig.getSchemaConfig().getRegistryURL();
+        if (StringUtils.isNotEmpty(sourceConfig.getSchemaConfig().getRegistryURL())) {
+            return sourceConfig.getSchemaConfig().getRegistryURL();
+        }
+        return StringUtils.EMPTY;
     }
-
-   /* private void setPropertiesForPlainTextAuth(Properties properties) {
-        String username = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getUsername();
-        String password = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getPassword();
-        properties.put("sasl.mechanism", "PLAIN");
-        properties.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + username + "\" password=\"" + password + "\";");
-        properties.put("security.protocol", "SASL_PLAINTEXT");
-    }*/
-
-    /*private void setPropertiesForOAuth(Properties properties) {
-        String instrospectProperties = "";
-        String oauthClientId = sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthClientId();
-        String oauthClientSecret = sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthClientSecret();
-        String oauthLoginServer = sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthLoginServer();
-        String oauthLoginEndpoint = sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthLoginEndpoint();
-        String oauthLoginGrantType = sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthLoginGrantType();
-        String oauthLoginScope = sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthLoginScope();
-        String oauthAuthorizationToken = Base64.getEncoder().encodeToString((oauthClientId + ":" + oauthClientSecret).getBytes());
-        String oauthIntrospectEndpoint = sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthIntrospectEndpoint();
-        //String tokenEndPointURL = sourceConfig.getAuthConfig().getoAuthConfig().getOauthTokenEndpointURL();
-        String tokenEndPointURL = oauthLoginServer.concat(oauthLoginEndpoint);
-        String saslMechanism = sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslMechanism();
-        String securityProtocol = sourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext();
-        String loginCallBackHandler = sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslLoginCallbackHandlerClass();
-        String oauthJwksEndpointURL = sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthJwksEndpointURL();
-        String oauthIntrospectServer = sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthIntrospectServer();
-
-        properties.put("sasl.mechanism", saslMechanism);
-        properties.put("security.protocol", securityProtocol);
-        properties.put("sasl.oauthbearer.token.endpoint.url", tokenEndPointURL);
-        if (!oauthJwksEndpointURL.isEmpty() || !oauthJwksEndpointURL.isBlank()) {
-            properties.put("sasl.oauthbearer.jwks.endpoint.url", oauthJwksEndpointURL);
-        }
-        properties.put("sasl.login.callback.handler.class", loginCallBackHandler);
-        if (oauthIntrospectEndpoint.isBlank() || oauthIntrospectEndpoint.isEmpty()) {
-            properties.put("sasl.jaas.config", "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required clientId='" + oauthClientId + "' clientSecret='" + oauthClientSecret + "' scope='" + oauthLoginScope + "' OAUTH_LOGIN_SERVER='" + oauthLoginServer + "' OAUTH_LOGIN_ENDPOINT='" + oauthLoginEndpoint + "' OAUT_LOGIN_GRANT_TYPE=" + oauthLoginGrantType + " OAUTH_LOGIN_SCOPE=" + oauthLoginScope + " OAUTH_AUTHORIZATION='Basic " + oauthAuthorizationToken + "' OAUTH_INTROSPECT_AUTHORIZATION='Basic " + oauthAuthorizationToken + "';");
-        } else {
-            properties.put("sasl.jaas.config", "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required clientId='" + oauthClientId + "' clientSecret='" + oauthClientSecret + "' scope='" + oauthLoginScope + "' OAUTH_LOGIN_SERVER='" + oauthLoginServer + "' OAUTH_LOGIN_ENDPOINT='" + oauthLoginEndpoint + "' OAUT_LOGIN_GRANT_TYPE=" + oauthLoginGrantType + " OAUTH_LOGIN_SCOPE=" + oauthLoginScope + " OAUTH_AUTHORIZATION='Basic " + oauthAuthorizationToken + "' OAUTH_INTROSPECT_SERVER='" + oauthLoginServer + "' OAUTH_INTROSPECT_ENDPOINT='" + oauthIntrospectEndpoint + "' OAUTH_INTROSPECT_AUTHORIZATION='Basic " + oauthAuthorizationToken + "';");
-        }
-
-       *//* if (oauthJwksEndpointURL != null && !oauthIntrospectEndpoint.isBlank() && !oauthIntrospectEndpoint.isEmpty()) {
-            instrospectProperties = String.format(INSTROSPECT_SERVER_DETAILS, oauthIntrospectServer, oauthIntrospectEndpoint, oauthAuthorizationToken);
-        }
-
-        String jassConfig = String.format(OAUTH_JAAS_CONFIG, oauthClientId, oauthClientSecret, oauthLoginScope, oauthLoginServer,
-                oauthLoginEndpoint, oauthLoginGrantType, oauthLoginScope, oauthAuthorizationToken, instrospectProperties);
-*//*
-    }*/
 
     private static String getSchemaType(final String registryUrl, final String topicName, final int schemaVersion) {
         StringBuilder response = new StringBuilder();
         String schemaType = MessageFormat.PLAINTEXT.toString();
         try {
-            String urlPath = registryUrl + "subjects/" + topicName + "-value/versions/" + schemaVersion;
+            String urlPath = registryUrl + "/subjects/" + topicName + "-value/versions/" + schemaVersion;
             URL url = new URL(urlPath);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -329,16 +281,10 @@ public class KafkaSource implements Source<Record<Object>> {
                 Object json = mapper.readValue(response.toString(), Object.class);
                 String indented = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
                 JsonNode rootNode = mapper.readTree(indented);
-/*
+
                 if (rootNode.has("schemaType")) {
                     JsonNode node = rootNode.findValue("schemaType");
                     schemaType = node.textValue();
-                } else {
-                    schemaType = MessageFormat.AVRO.toString();
-                }*/
-
-                if (rootNode.has("schemaType")) {
-                    schemaType = MessageFormat.JSON.toString();
                 } else {
                     schemaType = MessageFormat.AVRO.toString();
                 }
@@ -349,7 +295,7 @@ public class KafkaSource implements Source<Record<Object>> {
             }
         } catch (IOException e) {
             LOG.error("An error while fetching the schema registry details : ", e);
-            throw new RuntimeException();
+            throw new RuntimeException("An error occurred while fetching the schema registry...");
         }
         return schemaType;
     }
@@ -368,51 +314,4 @@ public class KafkaSource implements Source<Record<Object>> {
         errorStream.close();
         return errorMessage.toString();
     }
-
-    private void setConsumerOptionalProperties(Properties properties, TopicConfig topicConfig) {
-       /* properties.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, topicConfig.getSessionTimeOut());
-        properties.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG,topicConfig.getHeartBeatInterval());
-        properties.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG,topicConfig.getFetchMaxBytes());
-        properties.put(ConsumerConfig .FETCH_MAX_WAIT_MS_CONFIG,topicConfig.getFetchMaxWait());
-        properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG,topicConfig.getMaxPollInterval());
-        properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG,topicConfig.getConsumerMaxPollRecords());*/
-    }
-
-    private void setPropertiesForSchemaRegistryConnectivity(Properties properties) {
-        String clusterApiKey = sourceConfig.getSchemaConfig().getClusterApiKey();
-        String clusterApiSecret = sourceConfig.getSchemaConfig().getClusterApiSecret();
-        String schemRegistryApiKey= sourceConfig.getSchemaConfig().getSchemaRegistryApiKey();
-        String schemaRegistryApiSecret= sourceConfig.getSchemaConfig().getSchemaRegistryApiSecret();
-        String basicAuthUserInfo = schemRegistryApiKey.concat(";").concat(schemaRegistryApiSecret);
-        properties.put("sasl.mechanism", "PLAIN");
-        //properties.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username='LEWMKHNISW2LTBGW' password='UY/+LogHp7QJ8C9gQkdKIeXxiV8Pyt9nRRX0ij/aODN2qiDwS0NtV0vfZtPT5kz4';");
-        properties.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username='"+clusterApiKey+"' password='"+clusterApiSecret+"';");
-        properties.put("security.protocol", "SASL_SSL");
-        properties.put("client.dns.lookup", "use_all_dns_ips");
-        properties.put("session.timeout.ms", 45000);
-        properties.put("basic.auth.credentials.source","USER_INFO");
-        //properties.put("basic.auth.user.info","US3HLWRJXMKI2C6K:ts60pxjeQxENAEgph4C1uyB+Jismijn8Ia5kikl63nnp0yw5HvEhiBG1J0Ue9V4B");
-        properties.put("basic.auth.user.info",basicAuthUserInfo);
-        System.out.println("Schema Registry Connectivity Properties : "+properties);
-    }
-
-    //TODO Ajeesh - It is an optimizaed method to execute the properties once
-    /*private Properties getConsumerProperties(){
-        Properties properties = new Properties();
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, sourceConfig.getBootStrapServers());
-
-        if (sourceConfig.getAuthConfig() != null && sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
-            setPropertiesForPlainTextAuth(properties);
-        } else if (sourceConfig.getAuthConfig() != null && sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig() != null) {
-            setPropertiesForOAuth(properties);
-        }
-        //set properties for schema
-        *//*if (sourceConfig.getSchemaConfig() != null) {
-            setPropertiesForSchemaType(properties, topicConfig);
-        } else {
-            setPropertiesForPlaintextAndJsonWithoutSchemaRegistry(properties, topicConfig);
-        }*//*
-
-        return properties;
-    }*/
 }

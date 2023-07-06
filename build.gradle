@@ -41,7 +41,7 @@ allprojects {
     ext {
         mavenPublicationRootFile = file("${rootProject.buildDir}/m2")
     }
-    
+
     repositories {
         mavenCentral()
         maven { url 'https://jitpack.io' }

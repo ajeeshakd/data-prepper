@@ -37,6 +37,9 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.apache.kafka:kafka-clients:3.4.0:test'
     testImplementation 'org.apache.kafka:connect-json:3.4.0'
+    // https://mvnrepository.com/artifact/io.confluent/kafka-serde-tools-package
+    implementation 'io.confluent:kafka-serde-tools-package:7.3.3'
+
 
 }
 

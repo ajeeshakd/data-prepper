@@ -111,7 +111,7 @@ class KafkaSourceTest {
         topicConfig.setName(TOPIC);
         topicConfigList.add(topicConfig);
         sourceConfig.setTopics(topicConfigList);
-        sourceConfig.setBootStrapServers(Arrays.asList(BOOTSTRAP_SERVERS));
+        //sourceConfig.setBootStrapServers(Arrays.asList(BOOTSTRAP_SERVERS));
         sourceConfig.setAuthConfig(authConfig);
         sourceConfig.setSchemaConfig(schemaConfig);
         source = new KafkaSource(sourceConfig, pluginMetrics, pipelineDescription);
@@ -131,7 +131,7 @@ class KafkaSourceTest {
         topicConfig.setName(TOPIC);
         topicConfigList.add(topicConfig);
         sourceConfig.setTopics(topicConfigList);
-        sourceConfig.setBootStrapServers(Arrays.asList(BOOTSTRAP_SERVERS));
+        //sourceConfig.setBootStrapServers(Arrays.asList(BOOTSTRAP_SERVERS));
         sourceConfig.setAuthConfig(authConfig);
         sourceConfig.setSchemaConfig(schemaConfig);
         source = new KafkaSource(sourceConfig, pluginMetrics, pipelineDescription);
@@ -184,7 +184,7 @@ class KafkaSourceTest {
 
         topicConfigList.add(topicConfig);
         sourceConfig.setTopics(topicConfigList);
-        sourceConfig.setBootStrapServers(Arrays.asList(BOOTSTRAP_SERVERS));
+        //sourceConfig.setBootStrapServers(Arrays.asList(BOOTSTRAP_SERVERS));
         sourceConfig.setAuthConfig(authConfig);
 
         source = new KafkaSource(sourceConfig, pluginMetrics, pipelineDescription);

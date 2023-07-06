@@ -59,8 +59,8 @@ class SchemaConfigTest {
 	@Test
 	void testSetters(){
 		schemaConfig = new SchemaConfig();
-		schemaConfig.setVersion(2);
-		schemaConfig.setRegistryURL("http://localhost:8080/");
+		/*schemaConfig.setVersion(2);
+		schemaConfig.setRegistryURL("http://localhost:8080/");*/
 
 		assertEquals(2, schemaConfig.getVersion());
 		assertEquals("http://localhost:8080/", schemaConfig.getRegistryURL());

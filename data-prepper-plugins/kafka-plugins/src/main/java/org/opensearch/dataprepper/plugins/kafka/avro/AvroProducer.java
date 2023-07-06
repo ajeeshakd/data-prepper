@@ -32,10 +32,15 @@ public class AvroProducer {
 
         // Create some OrderEvents to produce
         ArrayList<Example> examples = new ArrayList<>();
-        examples.add(new Example("Black Gloves- New-2"));
+        examples.add(new Example("Black Gloves"));
         examples.add(new Example("Black Hat - New"));
         examples.add(new Example("Gold Hat- New"));
         examples.add(new Example("shoes- New"));
+        examples.add(new Example("Trouser- New"));
+        examples.add(new Example("T Shirt- New"));
+        examples.add(new Example("Casual Shirt- New"));
+        examples.add(new Example("Brown Tie"));
+
 
 
         // Turn each OrderEvent into a ProducerRecord for the orders topic, and send them

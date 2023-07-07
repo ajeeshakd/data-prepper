@@ -1,0 +1,318 @@
+10:49:25: Executing ':data-prepper-main:DataPrepperExecute.main()'...
+
+Starting Gradle Daemon...
+Gradle Daemon started in 7 s 560 ms
+> Task :data-prepper-api:compileJava UP-TO-DATE
+> Task :data-prepper-api:processResources NO-SOURCE
+> Task :data-prepper-api:classes UP-TO-DATE
+> Task :data-prepper-api:jar UP-TO-DATE
+> Task :data-prepper-expression:generateGrammarSource UP-TO-DATE
+> Task :data-prepper-expression:compileJava UP-TO-DATE
+> Task :data-prepper-logstash-configuration:generateGrammarSource UP-TO-DATE
+> Task :data-prepper-test-common:compileJava UP-TO-DATE
+> Task :data-prepper-test-common:processResources NO-SOURCE
+> Task :data-prepper-test-common:classes UP-TO-DATE
+> Task :data-prepper-test-common:jar UP-TO-DATE
+> Task :data-prepper-plugins:date-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:date-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:date-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:date-processor:jar UP-TO-DATE
+> Task :data-prepper-logstash-configuration:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:blocking-buffer:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:blocking-buffer:processResources NO-SOURCE
+> Task :data-prepper-plugins:blocking-buffer:classes UP-TO-DATE
+> Task :data-prepper-plugins:blocking-buffer:jar UP-TO-DATE
+> Task :data-prepper-plugins:common:compileJava UP-TO-DATE
+> Task :data-prepper-core:compileJava UP-TO-DATE
+> Task :data-prepper-core:processResources UP-TO-DATE
+> Task :data-prepper-core:classes UP-TO-DATE
+> Task :data-prepper-core:jar UP-TO-DATE
+> Task :data-prepper-expression:processResources NO-SOURCE
+> Task :data-prepper-expression:classes UP-TO-DATE
+> Task :data-prepper-expression:jar UP-TO-DATE
+> Task :data-prepper-logstash-configuration:processResources UP-TO-DATE
+> Task :data-prepper-logstash-configuration:classes UP-TO-DATE
+> Task :data-prepper-logstash-configuration:jar UP-TO-DATE
+> Task :data-prepper-plugins:otel-proto-common:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:otel-proto-common:processResources NO-SOURCE
+> Task :data-prepper-plugins:otel-proto-common:classes UP-TO-DATE
+> Task :data-prepper-plugins:otel-proto-common:jar UP-TO-DATE
+> Task :data-prepper-plugins:otel-metrics-raw-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:otel-metrics-raw-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:otel-metrics-raw-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:otel-metrics-raw-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:aggregate-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:aggregate-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:aggregate-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:aggregate-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:anomaly-detector-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:anomaly-detector-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:anomaly-detector-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:anomaly-detector-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:armeria-common:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:armeria-common:processResources NO-SOURCE
+> Task :data-prepper-plugins:armeria-common:classes UP-TO-DATE
+> Task :data-prepper-plugins:armeria-common:jar UP-TO-DATE
+> Task :data-prepper-plugins:avro-codecs:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:avro-codecs:processResources NO-SOURCE
+> Task :data-prepper-plugins:avro-codecs:classes UP-TO-DATE
+> Task :data-prepper-plugins:avro-codecs:jar UP-TO-DATE
+> Task :data-prepper-plugins:aws-plugin-api:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:aws-plugin-api:processResources NO-SOURCE
+> Task :data-prepper-plugins:aws-plugin-api:classes UP-TO-DATE
+> Task :data-prepper-plugins:aws-plugin-api:jar UP-TO-DATE
+> Task :data-prepper-plugins:aws-plugin:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:aws-plugin:processResources NO-SOURCE
+> Task :data-prepper-plugins:aws-plugin:classes UP-TO-DATE
+> Task :data-prepper-plugins:aws-plugin:jar UP-TO-DATE
+> Task :data-prepper-plugins:buffer-common:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:buffer-common:processResources NO-SOURCE
+> Task :data-prepper-plugins:buffer-common:classes UP-TO-DATE
+> Task :data-prepper-plugins:buffer-common:jar UP-TO-DATE
+> Task :data-prepper-plugins:aws-sqs-common:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:csv-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:csv-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:csv-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:csv-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:drop-events-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:drop-events-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:drop-events-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:drop-events-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:dynamodb-source-coordination-store:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:dynamodb-source-coordination-store:processResources NO-SOURCE
+> Task :data-prepper-plugins:dynamodb-source-coordination-store:classes UP-TO-DATE
+> Task :data-prepper-plugins:dynamodb-source-coordination-store:jar UP-TO-DATE
+> Task :data-prepper-plugins:failures-common:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:failures-common:processResources NO-SOURCE
+> Task :data-prepper-plugins:failures-common:classes UP-TO-DATE
+> Task :data-prepper-plugins:failures-common:jar UP-TO-DATE
+> Task :data-prepper-plugins:geoip-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:geoip-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:geoip-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:geoip-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:grok-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:grok-processor:processResources UP-TO-DATE
+> Task :data-prepper-plugins:grok-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:grok-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:http-sink:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:http-sink:processResources NO-SOURCE
+> Task :data-prepper-plugins:http-sink:classes UP-TO-DATE
+> Task :data-prepper-plugins:http-sink:jar UP-TO-DATE
+> Task :data-prepper-plugins:http-source:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:http-source:processResources UP-TO-DATE
+> Task :data-prepper-plugins:http-source:classes UP-TO-DATE
+> Task :data-prepper-plugins:http-source:jar UP-TO-DATE
+> Task :data-prepper-plugins:in-memory-source-coordination-store:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:in-memory-source-coordination-store:processResources NO-SOURCE
+> Task :data-prepper-plugins:in-memory-source-coordination-store:classes UP-TO-DATE
+> Task :data-prepper-plugins:in-memory-source-coordination-store:jar UP-TO-DATE
+> Task :data-prepper-plugins:kafka-plugins:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:kafka-plugins:processResources UP-TO-DATE
+> Task :data-prepper-plugins:kafka-plugins:classes UP-TO-DATE
+> Task :data-prepper-plugins:kafka-plugins:jar UP-TO-DATE
+> Task :data-prepper-plugins:key-value-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:key-value-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:key-value-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:key-value-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:log-generator-source:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:log-generator-source:processResources NO-SOURCE
+> Task :data-prepper-plugins:log-generator-source:classes UP-TO-DATE
+> Task :data-prepper-plugins:log-generator-source:jar UP-TO-DATE
+> Task :data-prepper-plugins:mapdb-processor-state:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:mapdb-processor-state:processResources NO-SOURCE
+> Task :data-prepper-plugins:mapdb-processor-state:classes UP-TO-DATE
+> Task :data-prepper-plugins:mapdb-processor-state:jar UP-TO-DATE
+> Task :data-prepper-plugins:mutate-event-processors:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:mutate-event-processors:processResources NO-SOURCE
+> Task :data-prepper-plugins:mutate-event-processors:classes UP-TO-DATE
+> Task :data-prepper-plugins:mutate-event-processors:jar UP-TO-DATE
+> Task :data-prepper-plugins:mutate-string-processors:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:mutate-string-processors:processResources NO-SOURCE
+> Task :data-prepper-plugins:mutate-string-processors:classes UP-TO-DATE
+> Task :data-prepper-plugins:mutate-string-processors:jar UP-TO-DATE
+> Task :data-prepper-plugins:newline-codecs:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:newline-codecs:processResources NO-SOURCE
+> Task :data-prepper-plugins:newline-codecs:classes UP-TO-DATE
+> Task :data-prepper-plugins:newline-codecs:jar UP-TO-DATE
+> Task :data-prepper-plugins:obfuscate-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:obfuscate-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:obfuscate-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:obfuscate-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:opensearch:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:opensearch:processResources UP-TO-DATE
+> Task :data-prepper-plugins:opensearch:classes UP-TO-DATE
+> Task :data-prepper-plugins:opensearch:jar UP-TO-DATE
+> Task :data-prepper-plugins:opensearch-source:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:opensearch-source:processResources NO-SOURCE
+> Task :data-prepper-plugins:opensearch-source:classes UP-TO-DATE
+> Task :data-prepper-plugins:opensearch-source:jar UP-TO-DATE
+> Task :data-prepper-plugins:otel-logs-source:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:otel-logs-source:processResources NO-SOURCE
+> Task :data-prepper-plugins:otel-logs-source:classes UP-TO-DATE
+> Task :data-prepper-plugins:otel-logs-source:jar UP-TO-DATE
+> Task :data-prepper-plugins:otel-metrics-source:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:otel-metrics-source:processResources NO-SOURCE
+> Task :data-prepper-plugins:otel-metrics-source:classes UP-TO-DATE
+> Task :data-prepper-plugins:otel-metrics-source:jar UP-TO-DATE
+> Task :data-prepper-plugins:otel-trace-group-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:otel-trace-group-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:otel-trace-group-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:otel-trace-group-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:otel-trace-raw-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:otel-trace-raw-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:otel-trace-raw-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:otel-trace-raw-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:otel-trace-source:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:otel-trace-source:processResources NO-SOURCE
+> Task :data-prepper-plugins:otel-trace-source:classes UP-TO-DATE
+> Task :data-prepper-plugins:otel-trace-source:jar UP-TO-DATE
+> Task :data-prepper-plugins:parquet-codecs:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:parquet-codecs:processResources UP-TO-DATE
+> Task :data-prepper-plugins:parquet-codecs:classes UP-TO-DATE
+> Task :data-prepper-plugins:parquet-codecs:jar UP-TO-DATE
+> Task :data-prepper-plugins:parse-json-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:parse-json-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:parse-json-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:parse-json-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:rss-source:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:rss-source:processResources NO-SOURCE
+> Task :data-prepper-plugins:rss-source:classes UP-TO-DATE
+> Task :data-prepper-plugins:rss-source:jar UP-TO-DATE
+> Task :data-prepper-plugins:s3-sink:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:s3-sink:processResources NO-SOURCE
+> Task :data-prepper-plugins:s3-sink:classes UP-TO-DATE
+> Task :data-prepper-plugins:s3-sink:jar UP-TO-DATE
+> Task :data-prepper-plugins:s3-source:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:s3-source:processResources UP-TO-DATE
+> Task :data-prepper-plugins:s3-source:classes UP-TO-DATE
+> Task :data-prepper-plugins:s3-source:jar UP-TO-DATE
+> Task :data-prepper-plugins:service-map-stateful:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:service-map-stateful:processResources NO-SOURCE
+> Task :data-prepper-plugins:service-map-stateful:classes UP-TO-DATE
+> Task :data-prepper-plugins:service-map-stateful:jar UP-TO-DATE
+> Task :data-prepper-plugins:sqs-source:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:sqs-source:processResources NO-SOURCE
+> Task :data-prepper-plugins:sqs-source:classes UP-TO-DATE
+> Task :data-prepper-plugins:sqs-source:jar UP-TO-DATE
+> Task :data-prepper-plugins:trace-peer-forwarder-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:trace-peer-forwarder-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:trace-peer-forwarder-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:trace-peer-forwarder-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:translate-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:translate-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:translate-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:translate-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:type-conversion-processor:compileJava NO-SOURCE
+> Task :data-prepper-plugins:type-conversion-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:type-conversion-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:type-conversion-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:user-agent-processor:compileJava UP-TO-DATE
+> Task :data-prepper-plugins:user-agent-processor:processResources NO-SOURCE
+> Task :data-prepper-plugins:user-agent-processor:classes UP-TO-DATE
+> Task :data-prepper-plugins:user-agent-processor:jar UP-TO-DATE
+> Task :data-prepper-plugins:compileJava NO-SOURCE
+> Task :data-prepper-main:compileJava UP-TO-DATE
+> Task :data-prepper-main:processResources UP-TO-DATE
+> Task :data-prepper-main:classes UP-TO-DATE
+> Task :data-prepper-plugins:processResources NO-SOURCE
+> Task :data-prepper-plugins:classes UP-TO-DATE
+> Task :data-prepper-plugins:jar UP-TO-DATE
+> Task :data-prepper-plugins:aws-sqs-common:processResources NO-SOURCE
+> Task :data-prepper-plugins:aws-sqs-common:classes UP-TO-DATE
+> Task :data-prepper-plugins:aws-sqs-common:jar UP-TO-DATE
+> Task :data-prepper-plugins:common:processResources NO-SOURCE
+> Task :data-prepper-plugins:common:classes UP-TO-DATE
+> Task :data-prepper-plugins:common:jar UP-TO-DATE
+
+> Task :data-prepper-main:DataPrepperExecute.main()
+2023-07-07T10:50:34,707 [main] INFO  org.opensearch.dataprepper.DataPrepperArgumentConfiguration - Command line args: D:\Projects\kafka-source-bug-fix-v1\data-prepper\pipelines,D:\Projects\kafka-source-bug-fix-v1\data-prepper\config\data-prepper-config.yaml
+2023-07-07T10:50:34,727 [main] INFO  org.opensearch.dataprepper.DataPrepperArgs - Using D:\Projects\kafka-source-bug-fix-v1\data-prepper\pipelines configuration file
+2023-07-07T10:50:37,501 [main] INFO  org.opensearch.dataprepper.parser.PipelineParser - Reading pipeline configuration from pipelines.yaml
+2023-07-07T10:50:37,594 [main] INFO  org.opensearch.dataprepper.parser.PipelineParser - Building pipeline [log-pipeline] from provided configuration
+2023-07-07T10:50:37,595 [main] INFO  org.opensearch.dataprepper.parser.PipelineParser - Building [kafka] as source component for the pipeline [log-pipeline]
+2023-07-07T10:50:37,990 [main] INFO  org.opensearch.dataprepper.parser.PipelineParser - Building buffer for the pipeline [log-pipeline]
+2023-07-07T10:50:38,000 [main] INFO  org.opensearch.dataprepper.parser.PipelineParser - Building processors for the pipeline [log-pipeline]
+2023-07-07T10:50:38,002 [main] INFO  org.opensearch.dataprepper.parser.PipelineParser - Building sinks for the pipeline [log-pipeline]
+2023-07-07T10:50:38,003 [main] INFO  org.opensearch.dataprepper.parser.PipelineParser - Building [stdout] as sink component
+2023-07-07T10:50:38,005 [main] INFO  org.opensearch.dataprepper.parser.PipelineParser - Constructing MultiBufferDecorator with [0] secondary buffers for pipeline [log-pipeline]
+2023-07-07T10:50:38,189 [main] WARN  org.opensearch.dataprepper.pipeline.server.config.DataPrepperServerConfiguration - Creating data prepper server without authentication. This is not secure.
+2023-07-07T10:50:38,190 [main] WARN  org.opensearch.dataprepper.pipeline.server.config.DataPrepperServerConfiguration - In order to set up Http Basic authentication for the data prepper server, go here: https://github.com/opensearch-project/data-prepper/blob/main/docs/core_apis.md#authentication
+2023-07-07T10:50:38,350 [main] INFO  org.opensearch.dataprepper.pipeline.Pipeline - Pipeline [log-pipeline] - Initiating pipeline execution
+2023-07-07T10:50:38,357 [log-pipeline-sink-worker-2-thread-1] INFO  org.opensearch.dataprepper.pipeline.Pipeline - Pipeline [log-pipeline] Sink is ready, starting source...
+2023-07-07T10:50:38,376 [main] WARN  org.opensearch.dataprepper.pipeline.server.HttpServerProvider - Creating Data Prepper server without TLS. This is not secure.
+2023-07-07T10:50:38,376 [main] WARN  org.opensearch.dataprepper.pipeline.server.HttpServerProvider - In order to set up TLS for the Data Prepper server, go here: https://github.com/opensearch-project/data-prepper/blob/main/docs/configuration.md#server-configuration
+2023-07-07T10:50:38,384 [log-pipeline-sink-worker-2-thread-1] INFO  org.opensearch.dataprepper.plugins.kafka.source.KafkaSource - Starting consumer with the properties : {key.deserializer=org.apache.kafka.common.serialization.StringDeserializer, security.protocol=PLAINTEXT, schema.registry.url=http://localhost:8085, value.deserializer=io.confluent.kafka.serializers.KafkaAvroDeserializer, client.dns.lookup=use_all_dns_ips, auto.register.schemas=false, sasl.mechanism=PLAIN, sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username='PFPRGOHSUOQZGWW4' password='NQCGxb2GSF19rlijA5ySPXFlLbD1PJpx6aGhIebs8IzcfZLyn6DHgCV1ahXXTxkL';, bootstrap.servers=[localhost:9092], session.timeout.ms=45000, specific.avro.reader=true}
+2023-07-07T10:50:40,082 [main] INFO  org.opensearch.dataprepper.pipeline.server.DataPrepperServer - Data Prepper server running at :4900
+2023-07-07T10:50:40,394 [log-pipeline-sink-worker-2-thread-1] WARN  org.apache.kafka.common.config.AbstractConfig - These configurations '[sasl.jaas.config]' were supplied but are not used yet.
+2023-07-07T10:50:40,438 [log-pipeline-sink-worker-2-thread-1] WARN  org.apache.kafka.common.config.AbstractConfig - These configurations '[sasl.jaas.config]' were supplied but are not used yet.
+2023-07-07T10:50:40,461 [log-pipeline-sink-worker-2-thread-1] WARN  org.apache.kafka.common.config.AbstractConfig - These configurations '[sasl.jaas.config]' were supplied but are not used yet.
+2023-07-07T10:50:40,482 [log-pipeline-sink-worker-2-thread-1] WARN  org.apache.kafka.common.config.AbstractConfig - These configurations '[sasl.jaas.config]' were supplied but are not used yet.
+2023-07-07T10:50:40,506 [log-pipeline-sink-worker-2-thread-1] WARN  org.apache.kafka.common.config.AbstractConfig - These configurations '[sasl.jaas.config]' were supplied but are not used yet.
+2023-07-07T10:50:40,529 [log-pipeline-sink-worker-2-thread-1] WARN  org.apache.kafka.common.config.AbstractConfig - These configurations '[sasl.jaas.config]' were supplied but are not used yet.
+2023-07-07T10:50:40,531 [log-pipeline-sink-worker-2-thread-1] INFO  org.opensearch.dataprepper.plugins.kafka.source.KafkaSource - Started Kafka source for topic kafka-avro
+2023-07-07T10:50:40,532 [log-pipeline-sink-worker-2-thread-1] INFO  org.opensearch.dataprepper.pipeline.Pipeline - Pipeline [log-pipeline] - Submitting request to initiate the pipeline processing
+2023-07-07T10:50:41,768 [pool-5-thread-1] WARN  org.apache.kafka.clients.NetworkClient$DefaultMetadataUpdater - [Consumer clientId=consumer-log-pipeline::kafka-avro-1, groupId=log-pipeline::kafka-avro] Error while fetching metadata with correlation id 2 : {kafka-avro=UNKNOWN_TOPIC_OR_PARTITION}
+2023-07-07T10:50:41,768 [pool-5-thread-5] WARN  org.apache.kafka.clients.NetworkClient$DefaultMetadataUpdater - [Consumer clientId=consumer-log-pipeline::kafka-avro-5, groupId=log-pipeline::kafka-avro] Error while fetching metadata with correlation id 2 : {kafka-avro=UNKNOWN_TOPIC_OR_PARTITION}
+2023-07-07T10:50:41,768 [pool-5-thread-3] WARN  org.apache.kafka.clients.NetworkClient$DefaultMetadataUpdater - [Consumer clientId=consumer-log-pipeline::kafka-avro-3, groupId=log-pipeline::kafka-avro] Error while fetching metadata with correlation id 2 : {kafka-avro=UNKNOWN_TOPIC_OR_PARTITION}
+2023-07-07T10:50:41,768 [pool-5-thread-4] WARN  org.apache.kafka.clients.NetworkClient$DefaultMetadataUpdater - [Consumer clientId=consumer-log-pipeline::kafka-avro-4, groupId=log-pipeline::kafka-avro] Error while fetching metadata with correlation id 2 : {kafka-avro=UNKNOWN_TOPIC_OR_PARTITION}
+2023-07-07T10:50:41,790 [pool-5-thread-2] WARN  org.apache.kafka.clients.NetworkClient$DefaultMetadataUpdater - [Consumer clientId=consumer-log-pipeline::kafka-avro-2, groupId=log-pipeline::kafka-avro] Error while fetching metadata with correlation id 2 : {kafka-avro=LEADER_NOT_AVAILABLE}
+2023-07-07T10:52:26,078 [pool-5-thread-1] ERROR org.opensearch.dataprepper.plugins.kafka.consumer.KafkaSourceCustomConsumer - Error while reading the records from the topic...
+org.apache.kafka.common.errors.RecordDeserializationException: Error deserializing key/value for partition kafka-avro-0 at offset 0. If needed, please seek past the record to continue consumption.
+	at org.apache.kafka.clients.consumer.internals.Fetcher.parseRecord(Fetcher.java:1438) ~[kafka-clients-7.4.0-ccs.jar:?]
+	at org.apache.kafka.clients.consumer.internals.Fetcher.access$3400(Fetcher.java:133) ~[kafka-clients-7.4.0-ccs.jar:?]
+	at org.apache.kafka.clients.consumer.internals.Fetcher$CompletedFetch.fetchRecords(Fetcher.java:1661) ~[kafka-clients-7.4.0-ccs.jar:?]
+	at org.apache.kafka.clients.consumer.internals.Fetcher$CompletedFetch.access$1900(Fetcher.java:1497) ~[kafka-clients-7.4.0-ccs.jar:?]
+	at org.apache.kafka.clients.consumer.internals.Fetcher.fetchRecords(Fetcher.java:717) ~[kafka-clients-7.4.0-ccs.jar:?]
+	at org.apache.kafka.clients.consumer.internals.Fetcher.collectFetch(Fetcher.java:683) ~[kafka-clients-7.4.0-ccs.jar:?]
+	at org.apache.kafka.clients.consumer.KafkaConsumer.pollForFetches(KafkaConsumer.java:1314) ~[kafka-clients-7.4.0-ccs.jar:?]
+	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1243) ~[kafka-clients-7.4.0-ccs.jar:?]
+	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1169) ~[kafka-clients-7.4.0-ccs.jar:?]
+	at org.opensearch.dataprepper.plugins.kafka.consumer.KafkaSourceCustomConsumer.consumeRecords(KafkaSourceCustomConsumer.java:139) ~[kafka-plugins-2.4.0-SNAPSHOT.jar:?]
+	at org.opensearch.dataprepper.plugins.kafka.consumer.KafkaSourceCustomConsumer.run(KafkaSourceCustomConsumer.java:185) [kafka-plugins-2.4.0-SNAPSHOT.jar:?]
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515) [?:?]
+	at java.util.concurrent.FutureTask.run(FutureTask.java:264) [?:?]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128) [?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628) [?:?]
+	at java.lang.Thread.run(Thread.java:834) [?:?]
+Caused by: org.apache.kafka.common.errors.SerializationException: Error deserializing Avro message for id 1
+	at io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer$DeserializationContext.read(AbstractKafkaAvroDeserializer.java:425) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer.deserialize(AbstractKafkaAvroDeserializer.java:152) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at io.confluent.kafka.serializers.KafkaAvroDeserializer.deserialize(KafkaAvroDeserializer.java:53) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at org.apache.kafka.common.serialization.Deserializer.deserialize(Deserializer.java:60) ~[kafka-clients-7.4.0-ccs.jar:?]
+	at org.apache.kafka.clients.consumer.internals.Fetcher.parseRecord(Fetcher.java:1429) ~[kafka-clients-7.4.0-ccs.jar:?]
+	... 15 more
+Caused by: com.google.common.util.concurrent.UncheckedExecutionException: org.apache.kafka.common.errors.SerializationException: Could not find class org.opensearch.dataprepper.plugins.kafka.avro.Example specified in writer's schema whilst finding reader's schema for a SpecificRecord.
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2085) ~[guava-32.0.1-jre.jar:?]
+	at com.google.common.cache.LocalCache.get(LocalCache.java:4011) ~[guava-32.0.1-jre.jar:?]
+	at com.google.common.cache.LocalCache.getOrLoad(LocalCache.java:4034) ~[guava-32.0.1-jre.jar:?]
+	at com.google.common.cache.LocalCache$LocalLoadingCache.get(LocalCache.java:5010) ~[guava-32.0.1-jre.jar:?]
+	at io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer.getDatumReader(AbstractKafkaAvroDeserializer.java:231) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer$DeserializationContext.read(AbstractKafkaAvroDeserializer.java:404) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer.deserialize(AbstractKafkaAvroDeserializer.java:152) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at io.confluent.kafka.serializers.KafkaAvroDeserializer.deserialize(KafkaAvroDeserializer.java:53) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at org.apache.kafka.common.serialization.Deserializer.deserialize(Deserializer.java:60) ~[kafka-clients-7.4.0-ccs.jar:?]
+	at org.apache.kafka.clients.consumer.internals.Fetcher.parseRecord(Fetcher.java:1429) ~[kafka-clients-7.4.0-ccs.jar:?]
+	... 15 more
+Caused by: org.apache.kafka.common.errors.SerializationException: Could not find class org.opensearch.dataprepper.plugins.kafka.avro.Example specified in writer's schema whilst finding reader's schema for a SpecificRecord.
+	at io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer.getSpecificReaderSchema(AbstractKafkaAvroDeserializer.java:293) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer.getReaderSchema(AbstractKafkaAvroDeserializer.java:264) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer.access$000(AbstractKafkaAvroDeserializer.java:49) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer$1.load(AbstractKafkaAvroDeserializer.java:65) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer$1.load(AbstractKafkaAvroDeserializer.java:60) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at com.google.common.cache.LocalCache$LoadingValueReference.loadFuture(LocalCache.java:3570) ~[guava-32.0.1-jre.jar:?]
+	at com.google.common.cache.LocalCache$Segment.loadSync(LocalCache.java:2312) ~[guava-32.0.1-jre.jar:?]
+	at com.google.common.cache.LocalCache$Segment.lockedGetOrLoad(LocalCache.java:2189) ~[guava-32.0.1-jre.jar:?]
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2079) ~[guava-32.0.1-jre.jar:?]
+	at com.google.common.cache.LocalCache.get(LocalCache.java:4011) ~[guava-32.0.1-jre.jar:?]
+	at com.google.common.cache.LocalCache.getOrLoad(LocalCache.java:4034) ~[guava-32.0.1-jre.jar:?]
+	at com.google.common.cache.LocalCache$LocalLoadingCache.get(LocalCache.java:5010) ~[guava-32.0.1-jre.jar:?]
+	at io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer.getDatumReader(AbstractKafkaAvroDeserializer.java:231) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer$DeserializationContext.read(AbstractKafkaAvroDeserializer.java:404) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer.deserialize(AbstractKafkaAvroDeserializer.java:152) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at io.confluent.kafka.serializers.KafkaAvroDeserializer.deserialize(KafkaAvroDeserializer.java:53) ~[kafka-avro-serializer-7.3.3.jar:?]
+	at org.apache.kafka.common.serialization.Deserializer.deserialize(Deserializer.java:60) ~[kafka-clients-7.4.0-ccs.jar:?]
+	at org.apache.kafka.clients.consumer.internals.Fetcher.parseRecord(Fetcher.java:1429) ~[kafka-clients-7.4.0-ccs.jar:?]
+	... 15 more
+
+
+Toolchain from `executable` property does not match toolchain from `javaLauncher` property

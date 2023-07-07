@@ -8,7 +8,7 @@ log-pipeline:
       cluster_api_secret: NQCGxb2GSF19rlijA5ySPXFlLbD1PJpx6aGhIebs8IzcfZLyn6DHgCV1ahXXTxkL
       client_dns_lookup: use_all_dns_ips
       topics:
-        - name: kafka-avro
+        - name: kafka-json
           workers: 5
           autocommit: false
           autocommit_interval: 5s
@@ -29,21 +29,20 @@ log-pipeline:
       schema:
         #registry_url: https://psrc-em82q.us-east-2.aws.confluent.cloud
         registry_url: http://localhost:8085
-        #version: 1
+        version: 1
         #schema_registry_api_key: GELED3HGEYRXEU6O
         #schema_registry_api_secret: vX3Lh2WwVaElb5c55dDrfvnH5xg1roVuNXr2l3VuIFKRbtpMQbS5iLhi06ZKqC53
         #basic_auth_credentials_source: USER_INFO
         #session_timeout_ms: 45000
         #security_protocol: SASL_SSL #Cloud
-        security_protocol: PLAINTEXT #local schema registry
-        sasl_mechanism: PLAIN
+        #security_protocol: PLAINTEXT #local schema registry
+        #sasl_mechanism: PLAIN
       authentication:
         protocol:
-          plaintext: SASL_PLAINTEXT
-          ssl:
+          plaintext: SASL_PLAINTEXT #local schema registry
+          #ssl: SASL_SSL  #Cloud connectivity
         mechanism:
           plain:
-          oauth:
-      serde_format: avro
+          #oauthbearer:
   sink:
     - stdout:

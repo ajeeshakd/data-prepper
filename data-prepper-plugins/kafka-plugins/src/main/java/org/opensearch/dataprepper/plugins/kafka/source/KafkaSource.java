@@ -7,6 +7,8 @@ package org.opensearch.dataprepper.plugins.kafka.source;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
@@ -35,10 +37,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -61,6 +60,7 @@ public class KafkaSource implements Source<Record<Object>> {
     private int totalWorkers;
     private String pipelineName;
     private String schemaType = MessageFormat.PLAINTEXT.toString();
+    private static CachedSchemaRegistryClient schemaRegistryClient;
 
     @DataPrepperPluginConstructor
     public KafkaSource(final KafkaSourceConfig sourceConfig, final PluginMetrics pluginMetrics,
@@ -183,11 +183,20 @@ public class KafkaSource implements Source<Record<Object>> {
     }
 
     private void setPropertiesForSchemaType(Properties properties) {
-        Optional<String> schema = Optional.of(Optional.ofNullable(sourceConfig.getSerdeFormat()).orElse(MessageFormat.PLAINTEXT.toString()));
-        schemaType = schema.get();
+        Map prop = properties;
+        Map<String, String> propertyMap = (Map<String, String>) prop;
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, getSchemaRegistryUrl());
-        //properties.put(KafkaAvroDeserializerConfig.AUTO_REGISTER_SCHEMAS, false);
+        properties.put(KafkaAvroDeserializerConfig.AUTO_REGISTER_SCHEMAS, false);
+        schemaRegistryClient = new CachedSchemaRegistryClient(properties.getProperty(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG),
+                100, propertyMap);
+        try {
+            schemaType = schemaRegistryClient.getSchemaMetadata(sourceConfig.getTopics().get(0).getName() + "-value",
+                    sourceConfig.getSchemaConfig().getVersion()).getSchemaType();
+        } catch (IOException | RestClientException e) {
+            LOG.error("Unable to find the schema registry details...");
+            throw new RuntimeException(e);
+        }
         if (schemaType.equalsIgnoreCase(MessageFormat.JSON.toString())) {
             properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer");
         } else if (schemaType.equalsIgnoreCase(MessageFormat.AVRO.toString())) {

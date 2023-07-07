@@ -11,12 +11,10 @@ import java.util.Base64;
 import java.util.Properties;
 
 /**
- * * This is static property configurer dedicated to authencation related information given in pipeline.yml
+ * * This is static property configure dedicated to authentication related information given in pipeline.yml
  */
 
 public class AuthenticationPropertyConfigurer {
-
-    private static final String SESSION_TIMEOUT_MS_CONFIG = "30000";
 
     private static final String SASL_MECHANISM = "sasl.mechanism";
 
@@ -42,47 +40,56 @@ public class AuthenticationPropertyConfigurer {
             "OAUTH_INTROSPECT_AUTHORIZATION='Basic " + "%s";
 
     private static final String PLAIN_MECHANISM = "PLAIN";
+    private static final String OAUTHBEARER_MECHANISM= "OAUTHBEARER";
 
     private static final String SASL_PLAINTEXT_PROTOCOL = "SASL_PLAINTEXT";
 
+    private static final String REGISTRY_BASIC_AUTH_USER_INFO = "schema.registry.basic.auth.user.info";
 
-    public static void setSaslPlainTextProperties(final KafkaSourceConfig KafkaSourceConfig,
+
+    public static void setSaslPlainTextProperties(final KafkaSourceConfig kafkaSourConfig,
                                                   final Properties properties) {
+        final String saslMechanism;
+        String username = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getUsername();
+        String password = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getPassword();
+        if(kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig()!=null){
+            properties.put(SASL_MECHANISM, PLAIN_MECHANISM);
+        }
+       // final String securityProtocol = kafkaSourConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext();
+        if(kafkaSourConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext() != null){
+            properties.put(SASL_SECURITY_PROTOCOL, SASL_PLAINTEXT_PROTOCOL);
+        }
 
-        String username = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getUsername();
-        String password = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getPassword();
-        properties.put(SASL_MECHANISM, PLAIN_MECHANISM);
+       // properties.put(SASL_MECHANISM, PLAIN_MECHANISM);
         properties.put(SASL_JAS_CONFIG, String.format(PLAINTEXT_JAASCONFIG, username, password));
-        properties.put(SASL_SECURITY_PROTOCOL, SASL_PLAINTEXT_PROTOCOL);
+        //properties.put(SASL_SECURITY_PROTOCOL, SASL_PLAINTEXT_PROTOCOL);
+       // properties.put(SASL_SECURITY_PROTOCOL, securityProtocol);
     }
 
-    public static void setOauthProperties(final KafkaSourceConfig KafkaSourceConfig,
+    public static void setOauthProperties(final KafkaSourceConfig kafkaSourConfig,
                                           final Properties properties) {
-        String securityProtocol= "";
-        String oauthClientId = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthClientId();
-        String oauthClientSecret = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthClientSecret();
-        String oauthLoginServer = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthLoginServer();
-        String oauthLoginEndpoint = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthLoginEndpoint();
-        String oauthLoginGrantType = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthLoginGrantType();
-        String oauthLoginScope = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthLoginScope();
-        String oauthAuthorizationToken = Base64.getEncoder().encodeToString((oauthClientId + ":" + oauthClientSecret).getBytes());
-        String oauthIntrospectEndpoint = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthIntrospectEndpoint();
-        String tokenEndPointURL = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthTokenEndpointURL();
-        String saslMechanism = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslMechanism();
-        if(StringUtils.isNotEmpty(KafkaSourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext())) {
-            securityProtocol= KafkaSourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext();
-        }else if(StringUtils.isNotEmpty(KafkaSourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl())){
-            securityProtocol= KafkaSourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl();
-        }
-        String loginCallBackHandler = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslLoginCallbackHandlerClass();
-        String oauthJwksEndpointURL = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthJwksEndpointURL();
-        String introspectServer = KafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthIntrospectServer();
+        final String oauthClientId = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthClientId();
+        final String oauthClientSecret = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthClientSecret();
+        final String oauthLoginServer = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthLoginServer();
+        final String oauthLoginEndpoint = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthLoginEndpoint();
+        final String oauthLoginGrantType = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthLoginGrantType();
+        final String oauthLoginScope = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthLoginScope();
+        final String oauthAuthorizationToken = Base64.getEncoder().encodeToString((oauthClientId + ":" + oauthClientSecret).getBytes());
+        final String oauthIntrospectEndpoint = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthIntrospectEndpoint();
+        final String tokenEndPointURL = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthTokenEndpointURL();
+        final String saslMechanism = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslMechanism();
+        final String securityProtocol = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSecurityProtocol();
+        final String loginCallBackHandler = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslLoginCallbackHandlerClass();
+        final String oauthJwksEndpointURL = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthJwksEndpointURL();
+        final String introspectServer = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthIntrospectServer();
 
 
         properties.put(SASL_MECHANISM, saslMechanism);
         properties.put(SASL_SECURITY_PROTOCOL, securityProtocol);
         properties.put(SASL_TOKEN_ENDPOINT_URL, tokenEndPointURL);
         properties.put(SASL_CALLBACK_HANDLER_CLASS, loginCallBackHandler);
+
+
         if (oauthJwksEndpointURL != null && !oauthJwksEndpointURL.isEmpty() && !oauthJwksEndpointURL.isBlank()) {
             properties.put(SASL_JWKS_ENDPOINT_URL, oauthJwksEndpointURL);
         }
@@ -94,6 +101,17 @@ public class AuthenticationPropertyConfigurer {
 
         String jass_config = String.format(OAUTH_JAASCONFIG, oauthClientId, oauthClientSecret, oauthLoginScope, oauthLoginServer,
                 oauthLoginEndpoint, oauthLoginGrantType, oauthLoginScope, oauthAuthorizationToken, instrospect_properties);
+
+        if ("USER_INFO".equalsIgnoreCase(kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getCredentialsSource())) {
+            final String apiKey = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getApiKey();
+            final String apiSecret = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getApiSecret();
+            final String extensionLogicalCluster = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getExtensionLogicalCluster();
+            final String extensionIdentityPoolId = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getExtensionIdentityPoolId();
+            properties.put(REGISTRY_BASIC_AUTH_USER_INFO, apiKey + ":" + apiSecret);
+            String extensionValue = "extension_logicalCluster= \"%s\" extension_identityPoolId=  " + " \"%s\";";
+            jass_config= jass_config.replace(";"," ");
+            jass_config+=String.format(extensionValue, extensionLogicalCluster, extensionIdentityPoolId);
+        }
 
         properties.put(SASL_JAS_CONFIG, jass_config);
     }

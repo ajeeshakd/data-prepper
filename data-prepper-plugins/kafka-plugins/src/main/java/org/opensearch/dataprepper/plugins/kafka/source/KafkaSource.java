@@ -72,15 +72,15 @@ public class KafkaSource implements Source<Record<Object>> {
 
     @Override
     public void start(Buffer<Record<Object>> buffer) {
-        Properties consumerProperties = new Properties();
-        setConsumerProperties(consumerProperties);
         sourceConfig.getTopics().forEach(topic -> {
             totalWorkers = 0;
             try {
                 totalWorkers = topic.getWorkers();
                 consumerGroupID = getGroupId(topic.getName());
-                executorService = Executors.newFixedThreadPool(totalWorkers);
+                Properties consumerProperties = new Properties();
+                setConsumerProperties(consumerProperties);
                 setConsumerTopicProperties(consumerProperties, topic);
+                executorService = Executors.newFixedThreadPool(totalWorkers);
                 IntStream.range(0, totalWorkers + 1).forEach(index -> {
                     String consumerId = consumerGroupID + "::" + Integer.toString(index + 1);
                     multithreadedConsumer = new MultithreadedConsumer(consumerId,
@@ -129,11 +129,6 @@ public class KafkaSource implements Source<Record<Object>> {
     }
 
     private void setConsumerProperties(Properties properties) {
-        if (StringUtils.isNotEmpty(sourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext())) {
-            //protocol = sourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext();
-        } else if (StringUtils.isNotEmpty(sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl())) {
-            //protocol = sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl();
-        }
         setBoostStrapServerProperties(properties);
         setSchemaRegistryProperties(properties);
         setAuthenticationProperties(properties);
@@ -237,12 +232,12 @@ public class KafkaSource implements Source<Record<Object>> {
             String basicAuthUserInfo = schemaRegistryApiKey.concat(":").concat(schemaRegistryApiSecret);
             properties.put("basic.auth.user.info", basicAuthUserInfo);
         }
-        if (StringUtils.isNotEmpty(sourceConfig.getSchemaConfig().getSaslMechanism())) {
+        /*if (StringUtils.isNotEmpty(sourceConfig.getSchemaConfig().getSaslMechanism())) {
             properties.put("sasl.mechanism", sourceConfig.getSchemaConfig().getSaslMechanism());
         }
         if (StringUtils.isNotEmpty(sourceConfig.getSchemaConfig().getSecurityProtocol())) {
             properties.put("security.protocol", sourceConfig.getSchemaConfig().getSecurityProtocol());
-        }
+        }*/
         if (StringUtils.isNotEmpty(sourceConfig.getSchemaConfig().getBasicAuthCredentialsSource())) {
             properties.put("basic.auth.credentials.source", sourceConfig.getSchemaConfig().getBasicAuthCredentialsSource());
         }

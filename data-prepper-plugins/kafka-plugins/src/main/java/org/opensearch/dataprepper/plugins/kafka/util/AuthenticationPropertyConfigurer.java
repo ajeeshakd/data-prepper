@@ -53,11 +53,16 @@ public class AuthenticationPropertyConfigurer {
         String username = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getUsername();
         String password = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getPassword();
         if(kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig()!=null){
-            properties.put(SASL_MECHANISM, PLAIN_MECHANISM);
+            //properties.put(SASL_MECHANISM, PLAIN_MECHANISM);
+            properties.put(SASL_MECHANISM,
+                    kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getSaslMechanism());
         }
        // final String securityProtocol = kafkaSourConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext();
         if(kafkaSourConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext() != null){
-            properties.put(SASL_SECURITY_PROTOCOL, SASL_PLAINTEXT_PROTOCOL);
+            //properties.put(SASL_SECURITY_PROTOCOL, SASL_PLAINTEXT_PROTOCOL);
+            properties.put(SASL_SECURITY_PROTOCOL,kafkaSourConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext());
+        }else if(kafkaSourConfig.getAuthConfig().getAuthProtocolConfig().getSsl() != null){
+            properties.put(SASL_SECURITY_PROTOCOL,kafkaSourConfig.getAuthConfig().getAuthProtocolConfig().getSsl());
         }
 
        // properties.put(SASL_MECHANISM, PLAIN_MECHANISM);

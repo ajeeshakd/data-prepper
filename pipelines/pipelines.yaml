@@ -39,10 +39,12 @@ log-pipeline:
         #sasl_mechanism: PLAIN
       authentication:
         protocol:
-          plaintext: SASL_PLAINTEXT #local schema registry
+          plaintext: PLAINTEXT #local schema registry
           #ssl: SASL_SSL  #Cloud connectivity
         mechanism:
           plain:
-          #oauthbearer:
+            sasl_mechanism: PLAIN
+          #oauth:
+            #sasl_mechanism: OAUTHBEARER
   sink:
     - stdout:

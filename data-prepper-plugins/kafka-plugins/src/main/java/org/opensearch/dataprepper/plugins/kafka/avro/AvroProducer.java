@@ -44,7 +44,7 @@ public class AvroProducer {
         // Turn each OrderEvent into a ProducerRecord for the orders topic, and send them
         for (Example example : examples) {
 
-            final ProducerRecord<String, Example> record = new ProducerRecord("kafka-avro", example);
+            final ProducerRecord<String, Example> record = new ProducerRecord("kafka-avro-test", example);
             producer.send(record);
         }
 

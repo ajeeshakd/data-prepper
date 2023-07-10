@@ -1,0 +1,41 @@
+log-pipeline:
+  source:
+    kafka:
+      bootstrap_servers:
+        - localhost:9092
+        #- pkc-l7pr2.ap-south-1.aws.confluent.cloud:9092
+      #cluster_api_key: M7STIPDO63BYMSV3
+      #cluster_api_secret: GGt0djMaHliiHVosfaJNxzgSu0edO2zDneHI6wjmnMxYKl8ioCeh5nlu2cbhwy54
+      #client_dns_lookup: use_all_dns_ips
+      topics:
+        - name: kafka-json
+          workers: 5
+          auto_commit: false
+          auto_commit_interval: 5s
+          session_timeout: 45s
+          max_retry_attempts: 1000
+          max_retry_delay: 1s
+          auto_offset_reset: earliest
+          thread_waiting_time: 1s
+          max_record_fetch_time: 4s
+          heart_beat_interval: 3s
+          buffer_default_timeout: 5s
+          fetch_max_bytes: 52428800
+          fetch_max_wait: 500
+          fetch_min_bytes: 1
+          retry_backoff: 100s
+          max_poll_interval: 300000s
+          consumer_max_poll_records: 500
+      schema:
+        #registry_url: https://psrc-10wgj.ap-southeast-2.aws.confluent.cloud
+        registry_url: http://localhost:8085
+        version: 1
+        #schema_registry_api_key: 6O6BOKNPGWEDSDPS
+        #schema_registry_api_secret: yd7GR0nDg68Ns3MfLMgEZwIBcbdMv6eJJzNdTpgMnPEJTijHWmrjIkSbJP5ieuIT
+        #basic_auth_credentials_source: USER_INFO
+        session_timeout_ms: 45000
+        #security_protocol: SASL_SSL #Cloud
+        security_protocol: PLAINTEXT #local schema registry
+        sasl_mechanism: PLAIN
+  sink:
+    - stdout:

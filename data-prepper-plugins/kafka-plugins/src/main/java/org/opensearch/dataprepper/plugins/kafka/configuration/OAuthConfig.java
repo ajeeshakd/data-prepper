@@ -49,6 +49,22 @@ public class OAuthConfig {
     @JsonProperty("oauth_jwks_endpoint_url")
     private String oauthJwksEndpointURL = "";
 
+    @JsonProperty("extension_logicalCluster")
+    private String extensionLogicalCluster;
+
+    @JsonProperty("extension_identityPoolId")
+    private String extensionIdentityPoolId;
+
+    @JsonProperty("api_key")
+    private String apiKey;
+
+    @JsonProperty("api_secret")
+    private String apiSecret;
+
+    @JsonProperty("credentials_source")
+    private String credentialsSource;
+
+
     public String getOauthJwksEndpointURL() {
         return oauthJwksEndpointURL;
     }
@@ -110,9 +126,6 @@ public class OAuthConfig {
     }
 
     public String getOauthIntrospectServer() {
-        /*if (oauthIntrospectServer.isEmpty() || oauthIntrospectServer.isBlank()) {
-            return oauthLoginServer;
-        }*/
         return oauthIntrospectServer;
     }
 
@@ -130,4 +143,25 @@ public class OAuthConfig {
     public void setOauthIntrospectEndpoint(String oauthIntrospectEndpoint) {
         this.oauthIntrospectEndpoint = oauthIntrospectEndpoint;
     }
+
+    public String getExtensionLogicalCluster() {
+        return extensionLogicalCluster;
+    }
+
+    public String getExtensionIdentityPoolId() {
+        return extensionIdentityPoolId;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public String getApiSecret() {
+        return apiSecret;
+    }
+
+    public String getCredentialsSource() {
+        return credentialsSource;
+    }
+
 }

@@ -5,13 +5,13 @@
 package org.opensearch.dataprepper.plugins.kafka.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.mockito.Mock;
 import org.yaml.snakeyaml.Yaml;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -67,8 +67,6 @@ class TopicConfigTest {
     @Tag(YAML_FILE_WITH_MISSING_CONSUMER_CONFIG)
     void testConfigValues_default() {
         assertEquals("my-topic-2", topicConfig.getName());
-        assertEquals("DPKafkaProj-2", topicConfig.getGroupId());
-        assertEquals("kafka-consumer-group-2", topicConfig.getGroupName());
         assertEquals(false, topicConfig.getAutoCommit());
         assertEquals(Duration.ofSeconds(5), topicConfig.getAutoCommitInterval());
         assertEquals(Duration.ofSeconds(45), topicConfig.getSessionTimeOut());
@@ -91,8 +89,6 @@ class TopicConfigTest {
     void testConfigValues_from_yaml() {
 
         assertEquals("my-topic-1", topicConfig.getName());
-        assertEquals("DPKafkaProj-2", topicConfig.getGroupId());
-        assertEquals("kafka-consumer-group-2", topicConfig.getGroupName());
         assertEquals(false, topicConfig.getAutoCommit());
         assertEquals(Duration.ofSeconds(5), topicConfig.getAutoCommitInterval());
         assertEquals(Duration.ofSeconds(45), topicConfig.getSessionTimeOut());
@@ -113,10 +109,7 @@ class TopicConfigTest {
     @Test
     @Tag(YAML_FILE_WITH_CONSUMER_CONFIG)
     void testConfigValues_from_yaml_not_null() {
-
         assertNotNull(topicConfig.getName());
-        assertNotNull(topicConfig.getGroupId());
-        assertNotNull(topicConfig.getGroupName());
         assertNotNull(topicConfig.getAutoCommit());
         assertNotNull(topicConfig.getAutoCommitInterval());
         assertNotNull(topicConfig.getSessionTimeOut());

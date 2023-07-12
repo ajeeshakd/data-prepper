@@ -13,17 +13,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class PlainTextAuthConfig {
 
-    @JsonProperty("username")
-    private String username;
+    @JsonProperty("cluster_api_key")
+    private String clusterApiKey;
 
-    @JsonProperty("password")
-    private String password;
+    @JsonProperty("cluster_api_secret")
+    private String clusterApiSecret;
 
-    public String getUsername() {
-        return username;
+    @JsonProperty("sasl_mechanism")
+    private String saslMechanism;
+
+    public String getSaslMechanism() {
+        return saslMechanism;
     }
 
-    public String getPassword() {
-        return password;
+    public String getClusterApiKey() {
+        return clusterApiKey;
+    }
+
+    public String getClusterApiSecret() {
+        return clusterApiSecret;
     }
 }

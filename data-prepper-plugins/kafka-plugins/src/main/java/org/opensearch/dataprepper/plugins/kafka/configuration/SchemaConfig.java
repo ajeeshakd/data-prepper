@@ -36,6 +36,20 @@ public class SchemaConfig {
   @JsonProperty("sasl_mechanism")
   private String saslMechanism;
 
+  @JsonProperty("extension_logical_cluster")
+  private String extensionLogicalCluster;
+
+  @JsonProperty("extension_identity_pool_id")
+  private String extensionIdentityPoolId;
+
+  public String getExtensionLogicalCluster() {
+    return extensionLogicalCluster;
+  }
+
+  public String getExtensionIdentityPoolId() {
+    return extensionIdentityPoolId;
+  }
+
   public String getSaslMechanism() {
     return saslMechanism;
   }

@@ -38,14 +38,14 @@ class PlainTextAuthConfigTest {
             Reader reader = new StringReader(json);
             KafkaSourceConfig kafkaSourceConfig = mapper.readValue(reader, KafkaSourceConfig.class);
             plainTextAuthConfig = kafkaSourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig();
-            username = plainTextAuthConfig.getUsername();
-            password = plainTextAuthConfig.getPassword();
+            username = plainTextAuthConfig.getClusterApiKey();
+            password = plainTextAuthConfig.getClusterApiSecret();
         }
     }
 
     @Test
     void testConfigValues() {
-        assertEquals(plainTextAuthConfig.getUsername(), username);
-        assertEquals(plainTextAuthConfig.getPassword(), password);
+        assertEquals(plainTextAuthConfig.getClusterApiKey(), username);
+        assertEquals(plainTextAuthConfig.getClusterApiSecret(), password);
     }
 }

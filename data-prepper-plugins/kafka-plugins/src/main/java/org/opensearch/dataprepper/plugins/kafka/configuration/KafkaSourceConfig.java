@@ -43,14 +43,20 @@ public class KafkaSourceConfig {
 
     @JsonProperty("acknowledgments")
     private Boolean acknowledgementsEnabled = false;
+    @JsonProperty("ssl_endpoint_identification_algorithm")
+    private String sslEndpointIdentificationAlgorithm;
 
-    public String getClusterApiKey() {
+    public String getSslEndpointIdentificationAlgorithm() {
+        return sslEndpointIdentificationAlgorithm;
+    }
+
+    /*public String getClusterApiKey() {
         return clusterApiKey;
     }
 
     public String getClusterApiSecret() {
         return clusterApiSecret;
-    }
+    }*/
 
     public String getSerdeFormat() {
         return serdeFormat;
@@ -63,10 +69,10 @@ public class KafkaSourceConfig {
     @JsonProperty("acknowledgments_timeout")
     private Duration acknowledgementsTimeout = DEFAULT_ACKNOWLEDGEMENTS_TIMEOUT;
 
-    @JsonProperty("cluster_api_key")
+   /* @JsonProperty("cluster_api_key")
     private String clusterApiKey;
     @JsonProperty("cluster_api_secret")
-    private String clusterApiSecret;
+    private String clusterApiSecret;*/
     @JsonProperty("serde_format")
     private String serdeFormat;
 

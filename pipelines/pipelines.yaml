@@ -2,13 +2,13 @@ log-pipeline:
   source:
     kafka:
       bootstrap_servers:
-        - localhost:9092
-        #- pkc-l7pr2.ap-south-1.aws.confluent.cloud:9092
+        #- localhost:9092
+        - pkc-l7pr2.ap-south-1.aws.confluent.cloud:9092
       #cluster_api_key: M7STIPDO63BYMSV3
       #cluster_api_secret: GGt0djMaHliiHVosfaJNxzgSu0edO2zDneHI6wjmnMxYKl8ioCeh5nlu2cbhwy54
       #client_dns_lookup: use_all_dns_ips
       topics:
-        - name: kafka-json
+        - name: jsonnew1
           workers: 5
           auto_commit: false
           auto_commit_interval: 5s
@@ -27,15 +27,45 @@ log-pipeline:
           max_poll_interval: 300000s
           consumer_max_poll_records: 500
       schema:
-        #registry_url: https://psrc-10wgj.ap-southeast-2.aws.confluent.cloud
-        registry_url: http://localhost:8085
+        registry_url: https://psrc-10wgj.ap-southeast-2.aws.confluent.cloud
+        #registry_url: http://localhost:8085
         version: 1
-        #schema_registry_api_key: 6O6BOKNPGWEDSDPS
-        #schema_registry_api_secret: yd7GR0nDg68Ns3MfLMgEZwIBcbdMv6eJJzNdTpgMnPEJTijHWmrjIkSbJP5ieuIT
-        #basic_auth_credentials_source: USER_INFO
+        schema_registry_api_key: 6O6BOKNPGWEDSDPS
+        schema_registry_api_secret: yd7GR0nDg68Ns3MfLMgEZwIBcbdMv6eJJzNdTpgMnPEJTijHWmrjIkSbJP5ieuIT
+        basic_auth_credentials_source: USER_INFO
+        extension_logical_cluster: lkc-yggz7j
+        extension_identity_pool_id: pool-RXzn
         session_timeout_ms: 45000
         #security_protocol: SASL_SSL #Cloud
-        security_protocol: PLAINTEXT #local schema registry
-        sasl_mechanism: PLAIN
+        #security_protocol: PLAINTEXT #local schema registry
+        #sasl_mechanism: OAUTHBEARER
+      authentication:
+        protocol:
+        #plaintext: SASL_PLAINTEXT #local schema registry
+        #ssl: SASL_SSL  #Cloud connectivity
+        mechanism:
+          plain:
+            sasl_mechanism: PLAIN
+            cluster_api_key: M7STIPDO63BYMSV3
+            cluster_api_secret: GGt0djMaHliiHVosfaJNxzgSu0edO2zDneHI6wjmnMxYKl8ioCeh5nlu2cbhwy54
+          oauth:
+            oauth_client_id: 0oa9wc21447Pc5vsV5d7
+            oauth_client_secret: aGmOfHqIEvBJGDxXAOOcatiE9PvsPgoEePx8IPPa
+            oauth_login_server: https://dev-13650048.okta.com
+            oauth_login_endpoint: /oauth2/default/v1/token
+            oauth_login_grant_type: refresh_token
+            oauth_login_scope: kafka
+            oauth_introspect_server: https://dev-13650048.okta.com
+            oauth_introspect_endpoint: /oauth2/default/v1/introspect
+            oauth_token_endpoint_url: https://dev-13650048.okta.com/oauth2/default/v1/token
+            oauth_sasl_mechanism: OAUTHBEARER
+            oauth_security_protocol: SASL_SSL
+            oauth_sasl_login_callback_handler_class: org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
+            oauth_jwks_endpoint_url: https://dev-13650048.okta.com/oauth2/default/v1/keys
+            #extension_logical_cluster: lkc-yggz7j
+            #extension_identity_poolId: pool-RXzn
+            #api_key: 6O6BOKNPGWEDSDPS
+            #api_secret: yd7GR0nDg68Ns3MfLMgEZwIBcbdMv6eJJzNdTpgMnPEJTijHWmrjIkSbJP5ieuIT
+            #credentials_source: USER_INFO
   sink:
     - stdout:

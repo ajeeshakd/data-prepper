@@ -13,7 +13,7 @@ import java.util.Properties;
  * * This is static property configure dedicated to authentication related information given in pipeline.yml
  */
 
-public class AuthenticationPropertyConfigurer {
+public class KafkaSourceSecurityConfigurer {
 
     private static final String SASL_MECHANISM = "sasl.mechanism";
 
@@ -49,8 +49,8 @@ public class AuthenticationPropertyConfigurer {
     public static void setSaslPlainTextProperties(final KafkaSourceConfig kafkaSourConfig,
                                                   final Properties properties) {
         final String saslMechanism;
-        String username = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getUsername();
-        String password = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getPassword();
+        String username = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiKey();
+        String password = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiSecret();
         if(kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig()!=null){
             properties.put(SASL_MECHANISM, PLAIN_MECHANISM);
         }
@@ -101,7 +101,18 @@ public class AuthenticationPropertyConfigurer {
         String jass_config = String.format(OAUTH_JAASCONFIG, oauthClientId, oauthClientSecret, oauthLoginScope, oauthLoginServer,
                 oauthLoginEndpoint, oauthLoginGrantType, oauthLoginScope, oauthAuthorizationToken, instrospect_properties);
 
-        if ("USER_INFO".equalsIgnoreCase(kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getCredentialsSource())) {
+        if ("USER_INFO".equalsIgnoreCase(kafkaSourConfig.getSchemaConfig().getBasicAuthCredentialsSource())) {
+            final String apiKey = kafkaSourConfig.getSchemaConfig().getSchemaRegistryApiKey();
+            final String apiSecret = kafkaSourConfig.getSchemaConfig().getSchemaRegistryApiSecret();
+            final String extensionLogicalCluster = kafkaSourConfig.getSchemaConfig().getExtensionLogicalCluster();
+            final String extensionIdentityPoolId = kafkaSourConfig.getSchemaConfig().getExtensionIdentityPoolId();
+            properties.put(REGISTRY_BASIC_AUTH_USER_INFO, apiKey + ":" + apiSecret);
+            properties.put("basic.auth.credentials.source","USER_INFO");
+            String extensionValue = "extension_logicalCluster= \"%s\" extension_identityPoolId=  " + " \"%s\";";
+            jass_config= jass_config.replace(";"," ");
+            jass_config+=String.format(extensionValue, extensionLogicalCluster, extensionIdentityPoolId);
+        }
+        /*if ("USER_INFO".equalsIgnoreCase(kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getCredentialsSource())) {
             final String apiKey = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getApiKey();
             final String apiSecret = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getApiSecret();
             final String extensionLogicalCluster = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getExtensionLogicalCluster();
@@ -111,7 +122,7 @@ public class AuthenticationPropertyConfigurer {
             String extensionValue = "extension_logicalCluster= \"%s\" extension_identityPoolId=  " + " \"%s\";";
             jass_config= jass_config.replace(";"," ");
             jass_config+=String.format(extensionValue, extensionLogicalCluster, extensionIdentityPoolId);
-        }
+        }*/
 
         properties.put(SASL_JAS_CONFIG, jass_config);
     }

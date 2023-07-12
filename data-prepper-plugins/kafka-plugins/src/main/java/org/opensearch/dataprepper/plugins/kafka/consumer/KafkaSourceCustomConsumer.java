@@ -15,6 +15,7 @@ import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.consumer.CommitFailedException;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.opensearch.dataprepper.model.log.JacksonLog;
 import org.opensearch.dataprepper.metrics.PluginMetrics;
 import org.opensearch.dataprepper.model.buffer.Buffer;
@@ -39,6 +40,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opensearch.dataprepper.plugins.kafka.util.MessageFormat;
 import org.apache.commons.lang3.Range;
+
+import javax.security.sasl.AuthenticationException;
 
 /**
  * * A utility class which will handle the core Kafka consumer operation.
@@ -186,7 +189,14 @@ public class KafkaSourceCustomConsumer implements Runnable, ConsumerRebalanceLis
                 commitOffsets();
             }
         } catch (Exception exp) {
-            LOG.error("Error while reading the records from the topic...", exp);
+            if (exp instanceof AuthenticationException || exp instanceof org.apache.kafka.common.errors.AuthenticationException) {
+                LOG.error("Authentication failed. Check your credentials.");
+            } else if (exp instanceof UnknownTopicOrPartitionException) {
+                LOG.error("Kafka Topic not available...");
+            } else {
+                LOG.error("Error while reading the records from the topic...", exp);
+            }
+            throw new RuntimeException(exp);
         }
     }
 
@@ -201,8 +211,12 @@ public class KafkaSourceCustomConsumer implements Runnable, ConsumerRebalanceLis
         if (schema == MessageFormat.JSON || schema == MessageFormat.AVRO) {
             value = new HashMap<>();
             try {
-                final JsonParser jsonParser = jsonFactory.createParser((String)consumerRecord.value().toString());
-                value = objectMapper.readValue(jsonParser, Map.class);
+                if(schema == MessageFormat.JSON){
+                    value = consumerRecord.value();
+                }else if(schema == MessageFormat.AVRO) {
+                    final JsonParser jsonParser = jsonFactory.createParser((String)consumerRecord.value().toString());
+                    value = objectMapper.readValue(jsonParser, Map.class);
+                }
             } catch (Exception e){
                 LOG.error("Failed to parse JSON or AVRO record");
                 return null;

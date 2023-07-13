@@ -204,7 +204,7 @@ public class KafkaSource implements Source<Record<Event>> {
     }
 
     private void setBoostStrapServerProperties(Properties properties, TopicConfig topic) {
-        if (sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
+        if (sourceConfig.getAuthConfig() != null) {
             String clusterApiKey = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiKey();
             String clusterApiSecret = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiSecret();
             properties.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username='" + clusterApiKey + "' password='" + clusterApiSecret + "';");
@@ -272,7 +272,7 @@ public class KafkaSource implements Source<Record<Event>> {
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,
                 topicConfig.getAutoCommit());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupID);
-        setConsumerOptionalProperties(properties, topicConfig);
+        //(properties, topicConfig);
     }
 
     private void setConsumerOptionalProperties(Properties properties, TopicConfig topicConfig) {
@@ -294,16 +294,18 @@ public class KafkaSource implements Source<Record<Event>> {
             properties.put("schema.registry.basic.auth.user.info", schemaBasicAuthUserInfo);
             properties.put("basic.auth.credentials.source", "USER_INFO");
         }
-
         String sasl_mechanism = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getSaslMechanism();
-        sasl_mechanism = (sasl_mechanism == null) ? sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslMechanism() : null;
-        if (StringUtils.isNotEmpty(sasl_mechanism)) {
+        if(StringUtils.isNotEmpty(sasl_mechanism)){
             properties.put("sasl.mechanism", sasl_mechanism);
+        }else if(StringUtils.isNotEmpty(sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslMechanism())){
+            properties.put("sasl.mechanism",  sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslMechanism());
         }
+
         String protocol = sourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext();
-        protocol = (protocol == null) ? sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl() : null;
         if (StringUtils.isNotEmpty(protocol)) {
             properties.put("security.protocol", protocol);
+        }else if(StringUtils.isNotEmpty(sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl())){
+            properties.put("security.protocol", sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl());
         }
         properties.put("session.timeout.ms", sourceConfig.getSchemaConfig().getSessionTimeoutms());
     }
@@ -392,7 +394,7 @@ public class KafkaSource implements Source<Record<Event>> {
         try (AdminClient client = KafkaAdminClient.create(properties)) {
             ListTopicsResult topics = client.listTopics();
             Set<String> names = topics.names().get();
-            if (names.isEmpty()) {
+            if (!names.isEmpty()) {
                 for (String topicName : names) {
                     if (topicName.equalsIgnoreCase(topic.getName()))
                         return true;

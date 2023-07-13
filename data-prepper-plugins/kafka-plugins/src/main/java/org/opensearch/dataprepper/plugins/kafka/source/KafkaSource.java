@@ -15,6 +15,10 @@ import org.apache.avro.generic.GenericRecord;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.KafkaAdminClient;
+import org.apache.kafka.clients.admin.ListTopicsResult;
+import org.apache.kafka.common.Node;
 import org.apache.kafka.common.errors.BrokerNotAvailableException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import io.micrometer.core.instrument.Counter;
@@ -46,17 +50,23 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Comparator;
-import java.util.List;
+import java.util.Set;
+import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
+import java.util.List;
+import java.util.Comparator;
 import java.util.Properties;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+
+
 /**
  * The starting point of the Kafka-source plugin and the Kafka consumer
  * properties and kafka multithreaded consumers are being handled here.
@@ -75,7 +85,7 @@ public class KafkaSource implements Source<Record<Event>> {
     private KafkaSourceCustomConsumer consumer;
     private String pipelineName;
     private String schemaType = MessageFormat.PLAINTEXT.toString();
-    private static final String SCHEMA_TYPE= "schemaType";
+    private static final String SCHEMA_TYPE = "schemaType";
     private String consumerGroupID;
     private final AcknowledgementSetManager acknowledgementSetManager;
     private static CachedSchemaRegistryClient schemaRegistryClient;
@@ -96,11 +106,10 @@ public class KafkaSource implements Source<Record<Event>> {
     @Override
     public void start(Buffer<Record<Event>> buffer) {
         sourceConfig.getTopics().forEach(topic -> {
-            //Properties consumerProperties = getConsumerProperties(topic);
             MessageFormat schema = MessageFormat.getByMessageFormatByName(schemaType);
             try {
                 Properties consumerProperties = new Properties();
-                setConsumerProperties(consumerProperties,topic);
+                setConsumerProperties(consumerProperties, topic);
                 int numWorkers = topic.getWorkers();
                 consumerGroupID = getGroupId(topic.getName());
                 setConsumerTopicProperties(consumerProperties, topic);
@@ -124,9 +133,9 @@ public class KafkaSource implements Source<Record<Event>> {
                     executorService.submit(consumer);
                 });
             } catch (Exception e) {
-                if(e instanceof BrokerNotAvailableException || e instanceof BrokerEndPointNotAvailableException){
-                    LOG.error("kafka broker not available...");
-                }else {
+                if (e instanceof BrokerNotAvailableException || e instanceof BrokerEndPointNotAvailableException || e instanceof TimeoutException) {
+                    LOG.error("The kafka broker is not available...");
+                } else {
                     LOG.error("Failed to setup the Kafka Source Plugin.", e);
                 }
                 throw new RuntimeException();
@@ -171,13 +180,7 @@ public class KafkaSource implements Source<Record<Event>> {
     }
 
     private void setConsumerProperties(Properties properties, TopicConfig topic) {
-        /*if (StringUtils.isNotEmpty(sourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext())) {
-            //protocol = sourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext();
-        } else if (StringUtils.isNotEmpty(sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl())) {
-            //protocol = sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl();
-        }*/
-
-        setBoostStrapServerProperties(properties);
+        setBoostStrapServerProperties(properties, topic);
         setAuthenticationProperties(properties);
         setSchemaRegistryProperties(properties, topic);
         LOG.info("Starting consumer with the properties for Topic {}  : {}", topic.getName(), properties);
@@ -194,23 +197,30 @@ public class KafkaSource implements Source<Record<Event>> {
     private void setSchemaRegistryProperties(Properties properties, TopicConfig topic) {
         if (sourceConfig.getSchemaConfig() != null && StringUtils.isNotEmpty(sourceConfig.getSchemaConfig().getRegistryURL())) {
             setPropertiesForSchemaRegistryConnectivity(properties);
-            setPropertiesForSchemaType(properties,topic);
+            setPropertiesForSchemaType(properties, topic);
         } else if (sourceConfig.getSchemaConfig() == null) {
             setPropertiesForPlaintextAndJsonWithoutSchemaRegistry(properties);
         }
     }
 
-    private void setBoostStrapServerProperties(Properties properties) {
-        if(sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
+    private void setBoostStrapServerProperties(Properties properties, TopicConfig topic) {
+        if (sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
             String clusterApiKey = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiKey();
             String clusterApiSecret = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiSecret();
-                properties.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username='" + clusterApiKey + "' password='" + clusterApiSecret + "';");
+            properties.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username='" + clusterApiKey + "' password='" + clusterApiSecret + "';");
         }
         if (StringUtils.isNotEmpty(sourceConfig.getClientDnsLookup())) {
             properties.put("client.dns.lookup", sourceConfig.getClientDnsLookup());
         }
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, sourceConfig.getBootStrapServers());
-        if(StringUtils.isNotEmpty(sourceConfig.getSslEndpointIdentificationAlgorithm())) {
+        if (!getKafkaServerRunningStatus(sourceConfig.getBootStrapServers())) {
+            throw new RuntimeException("The Kafka broker is not available...");
+        } else {
+            if (!checkTopicAvailability(topic)) {
+                LOG.error("The Topic {} is not available...",topic.getName());
+            }
+        }
+        if (StringUtils.isNotEmpty(sourceConfig.getSslEndpointIdentificationAlgorithm())) {
             properties.put("ssl.endpoint.identification.algorithm", sourceConfig.getSslEndpointIdentificationAlgorithm());
         }
     }
@@ -238,18 +248,14 @@ public class KafkaSource implements Source<Record<Event>> {
                 100, propertyMap);
         try {
             schemaType = schemaRegistryClient.getSchemaMetadata(topic.getName() + "-value",
-                    sourceConfig.getSchemaConfig().getVersion()).getSchemaType();//TODO: getTopics().get(0) is only for testing
+                    sourceConfig.getSchemaConfig().getVersion()).getSchemaType();
         } catch (IOException | RestClientException e) {
             LOG.error("Failed to connect to the schema registry...");
             throw new RuntimeException(e);
         }
         if (schemaType.equalsIgnoreCase(MessageFormat.JSON.toString())) {
-            //properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer");
-            properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,  KafkaJsonDeserializer.class);
+            properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaJsonDeserializer.class);
         } else if (schemaType.equalsIgnoreCase(MessageFormat.AVRO.toString())) {
-            //properties.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
-/*            properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                    "io.confluent.kafka.serializers.KafkaAvroDeserializer");*/
             properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
         } else {
             properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
@@ -286,11 +292,9 @@ public class KafkaSource implements Source<Record<Event>> {
                 && sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
             String schemaBasicAuthUserInfo = schemaRegistryApiKey.concat(":").concat(schemaRegistryApiSecret);
             properties.put("schema.registry.basic.auth.user.info", schemaBasicAuthUserInfo);
-            properties.put("basic.auth.credentials.source","USER_INFO");
+            properties.put("basic.auth.credentials.source", "USER_INFO");
         }
-        /*if (StringUtils.isNotEmpty(sourceConfig.getSchemaConfig().getSaslMechanism())) {
-            properties.put("sasl.mechanism", sourceConfig.getSchemaConfig().getSaslMechanism());
-        }*/
+
         String sasl_mechanism = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getSaslMechanism();
         sasl_mechanism = (sasl_mechanism == null) ? sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslMechanism() : null;
         if (StringUtils.isNotEmpty(sasl_mechanism)) {
@@ -301,10 +305,6 @@ public class KafkaSource implements Source<Record<Event>> {
         if (StringUtils.isNotEmpty(protocol)) {
             properties.put("security.protocol", protocol);
         }
-        //the below code is addressed in securityconfigurer.java
-        /*if (StringUtils.isNotEmpty(sourceConfig.getSchemaConfig().getBasicAuthCredentialsSource())) {
-            properties.put("basic.auth.credentials.source", sourceConfig.getSchemaConfig().getBasicAuthCredentialsSource());
-        }*/
         properties.put("session.timeout.ms", sourceConfig.getSchemaConfig().getSessionTimeoutms());
     }
 
@@ -382,4 +382,46 @@ public class KafkaSource implements Source<Record<Event>> {
         errorStream.close();
         return errorMessage.toString();
     }
+
+
+    private boolean checkTopicAvailability(TopicConfig topic) {
+        Properties properties = new Properties();
+        properties.put("bootstrap.servers", "localhost:9092");
+        properties.put("connections.max.idle.ms", 5000);
+        properties.put("request.timeout.ms", 5000);
+        try (AdminClient client = KafkaAdminClient.create(properties)) {
+            ListTopicsResult topics = client.listTopics();
+            Set<String> names = topics.names().get();
+            if (names.isEmpty()) {
+                for (String topicName : names) {
+                    if (topicName.equalsIgnoreCase(topic.getName()))
+                        return true;
+                }
+            }
+            return false;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Exception while checking the topics availability...");
+        }
+    }
+
+    private boolean getKafkaServerRunningStatus(List<String> bootStrapServers) {
+        Properties props = new Properties();
+        props.put("bootstrap.servers", bootStrapServers);
+        props.put("request.timeout.ms", 10000);
+        props.put("connections.max.idle.ms", 5000);
+
+        AdminClient adminClient = AdminClient.create(props);
+        Collection<Node> nodes = null;
+        try {
+            nodes = adminClient.describeCluster()
+                    .nodes()
+                    .get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e.getCause());
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e.getCause());
+        }
+        return nodes != null && nodes.size() > 0;
+    }
+
 }

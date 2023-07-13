@@ -39,7 +39,7 @@ public class KafkaSourceSecurityConfigurer {
             "OAUTH_INTROSPECT_AUTHORIZATION='Basic " + "%s";
 
     private static final String PLAIN_MECHANISM = "PLAIN";
-    private static final String OAUTHBEARER_MECHANISM= "OAUTHBEARER";
+    private static final String OAUTHBEARER_MECHANISM = "OAUTHBEARER";
 
     private static final String SASL_PLAINTEXT_PROTOCOL = "SASL_PLAINTEXT";
 
@@ -51,18 +51,13 @@ public class KafkaSourceSecurityConfigurer {
         final String saslMechanism;
         String username = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiKey();
         String password = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiSecret();
-        if(kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig()!=null){
+        if (kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
             properties.put(SASL_MECHANISM, PLAIN_MECHANISM);
         }
-        // final String securityProtocol = kafkaSourConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext();
-        if(kafkaSourConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext() != null){
+        if (kafkaSourConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext() != null) {
             properties.put(SASL_SECURITY_PROTOCOL, SASL_PLAINTEXT_PROTOCOL);
         }
-
-        // properties.put(SASL_MECHANISM, PLAIN_MECHANISM);
         properties.put(SASL_JAS_CONFIG, String.format(PLAINTEXT_JAASCONFIG, username, password));
-        //properties.put(SASL_SECURITY_PROTOCOL, SASL_PLAINTEXT_PROTOCOL);
-        // properties.put(SASL_SECURITY_PROTOCOL, securityProtocol);
     }
 
     public static void setOauthProperties(final KafkaSourceConfig kafkaSourConfig,
@@ -107,23 +102,11 @@ public class KafkaSourceSecurityConfigurer {
             final String extensionLogicalCluster = kafkaSourConfig.getSchemaConfig().getExtensionLogicalCluster();
             final String extensionIdentityPoolId = kafkaSourConfig.getSchemaConfig().getExtensionIdentityPoolId();
             properties.put(REGISTRY_BASIC_AUTH_USER_INFO, apiKey + ":" + apiSecret);
-            properties.put("basic.auth.credentials.source","USER_INFO");
+            properties.put("basic.auth.credentials.source", "USER_INFO");
             String extensionValue = "extension_logicalCluster= \"%s\" extension_identityPoolId=  " + " \"%s\";";
-            jass_config= jass_config.replace(";"," ");
-            jass_config+=String.format(extensionValue, extensionLogicalCluster, extensionIdentityPoolId);
+            jass_config = jass_config.replace(";", " ");
+            jass_config += String.format(extensionValue, extensionLogicalCluster, extensionIdentityPoolId);
         }
-        /*if ("USER_INFO".equalsIgnoreCase(kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getCredentialsSource())) {
-            final String apiKey = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getApiKey();
-            final String apiSecret = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getApiSecret();
-            final String extensionLogicalCluster = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getExtensionLogicalCluster();
-            final String extensionIdentityPoolId = kafkaSourConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getExtensionIdentityPoolId();
-            properties.put(REGISTRY_BASIC_AUTH_USER_INFO, apiKey + ":" + apiSecret);
-            properties.put("basic.auth.credentials.source","USER_INFO");
-            String extensionValue = "extension_logicalCluster= \"%s\" extension_identityPoolId=  " + " \"%s\";";
-            jass_config= jass_config.replace(";"," ");
-            jass_config+=String.format(extensionValue, extensionLogicalCluster, extensionIdentityPoolId);
-        }*/
-
         properties.put(SASL_JAS_CONFIG, jass_config);
     }
 }

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class AuthMechanismConfig {
     @JsonProperty("plain")
     private PlainTextAuthConfig plainTextAuthConfig;
-    @JsonProperty("oauthbearer")
+    @JsonProperty("oauth")
     private OAuthConfig oAuthConfig;
 
     public PlainTextAuthConfig getPlainTextAuthConfig() {

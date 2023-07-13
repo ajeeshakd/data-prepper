@@ -20,6 +20,7 @@ import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.errors.BrokerNotAvailableException;
+import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import io.micrometer.core.instrument.Counter;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -33,8 +34,7 @@ import org.opensearch.dataprepper.model.record.Record;
 import org.opensearch.dataprepper.model.event.Event;
 import org.opensearch.dataprepper.model.source.Source;
 import org.opensearch.dataprepper.model.acknowledgements.AcknowledgementSetManager;
-import org.opensearch.dataprepper.plugins.kafka.configuration.KafkaSourceConfig;
-import org.opensearch.dataprepper.plugins.kafka.configuration.TopicConfig;
+import org.opensearch.dataprepper.plugins.kafka.configuration.*;
 import org.opensearch.dataprepper.plugins.kafka.consumer.KafkaSourceCustomConsumer;
 import org.opensearch.dataprepper.plugins.kafka.util.KafkaSourceSecurityConfigurer;
 import org.opensearch.dataprepper.plugins.kafka.util.KafkaSourceJsonDeserializer;
@@ -187,39 +187,43 @@ public class KafkaSource implements Source<Record<Event>> {
     }
 
     private void setAuthenticationProperties(Properties properties) {
-        if (sourceConfig.getAuthConfig() != null && sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
+        AuthConfig authConfig = sourceConfig.getAuthConfig();
+        if (authConfig != null && authConfig.getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
             KafkaSourceSecurityConfigurer.setSaslPlainTextProperties(sourceConfig, properties);
-        } else if (sourceConfig.getAuthConfig() != null && sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig() != null) {
+        } else if (authConfig != null && authConfig.getAuthMechanismConfig().getoAuthConfig() != null) {
             KafkaSourceSecurityConfigurer.setOauthProperties(sourceConfig, properties);
         }
     }
 
     private void setSchemaRegistryProperties(Properties properties, TopicConfig topic) {
-        if (sourceConfig.getSchemaConfig() != null && StringUtils.isNotEmpty(sourceConfig.getSchemaConfig().getRegistryURL())) {
+        SchemaConfig schemaConfig = sourceConfig.getSchemaConfig();
+        if (schemaConfig != null && StringUtils.isNotEmpty(schemaConfig.getRegistryURL())) {
             setPropertiesForSchemaRegistryConnectivity(properties);
             setPropertiesForSchemaType(properties, topic);
-        } else if (sourceConfig.getSchemaConfig() == null) {
+        } else if (schemaConfig == null) {
             setPropertiesForPlaintextAndJsonWithoutSchemaRegistry(properties);
         }
     }
 
     private void setBoostStrapServerProperties(Properties properties, TopicConfig topic) {
-        if (sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null ) {
-            String clusterApiKey = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiKey();
-            String clusterApiSecret = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiSecret();
+        AuthConfig authConfig = sourceConfig.getAuthConfig();
+        if (authConfig != null && authConfig.getAuthMechanismConfig() != null &&
+                authConfig.getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
+            String clusterApiKey = authConfig.getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiKey();
+            String clusterApiSecret = authConfig.getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiSecret();
             properties.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username='" + clusterApiKey + "' password='" + clusterApiSecret + "';");
         }
         if (StringUtils.isNotEmpty(sourceConfig.getClientDnsLookup())) {
             properties.put("client.dns.lookup", sourceConfig.getClientDnsLookup());
         }
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, sourceConfig.getBootStrapServers());
-        if (!getKafkaServerRunningStatus(sourceConfig.getBootStrapServers())) {
+        if (!isKafkaClusterExists(sourceConfig.getBootStrapServers())) {
             throw new RuntimeException("The Kafka broker is not available...");
-        } else {
-            if (!checkTopicAvailability(topic)) {
-                LOG.error("The Topic {} is not available...",topic.getName());
+        } /*else {
+            if (!isTopicExists(topic)) {
+                LOG.error("The Topic {} is not available...", topic.getName());
             }
-        }
+        }*/
         if (StringUtils.isNotEmpty(sourceConfig.getSslEndpointIdentificationAlgorithm())) {
             properties.put("ssl.endpoint.identification.algorithm", sourceConfig.getSslEndpointIdentificationAlgorithm());
         }
@@ -285,29 +289,34 @@ public class KafkaSource implements Source<Record<Event>> {
     }
 
     private void setPropertiesForSchemaRegistryConnectivity(Properties properties) {
+        AuthConfig authConfig = sourceConfig.getAuthConfig();
         String schemaRegistryApiKey = sourceConfig.getSchemaConfig().getSchemaRegistryApiKey();
         String schemaRegistryApiSecret = sourceConfig.getSchemaConfig().getSchemaRegistryApiSecret();
         //with plaintext authentication
         if ("USER_INFO".equalsIgnoreCase(sourceConfig.getSchemaConfig().getBasicAuthCredentialsSource())
-                && sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
+                && authConfig.getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
             String schemaBasicAuthUserInfo = schemaRegistryApiKey.concat(":").concat(schemaRegistryApiSecret);
             properties.put("schema.registry.basic.auth.user.info", schemaBasicAuthUserInfo);
             properties.put("basic.auth.credentials.source", "USER_INFO");
         }
 
-        if(sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null){
-            String sasl_mechanism = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getSaslMechanism();
+        if (authConfig != null &&
+                authConfig.getAuthMechanismConfig().getPlainTextAuthConfig() != null) {
+            String sasl_mechanism = authConfig.getAuthMechanismConfig().getPlainTextAuthConfig().getSaslMechanism();
             properties.put("sasl.mechanism", sasl_mechanism);
-        }else if(sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig()!= null){
-            properties.put("sasl.mechanism",  sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslMechanism());
+        } else if (authConfig != null &&
+                authConfig.getAuthMechanismConfig().getoAuthConfig() != null) {
+            properties.put("sasl.mechanism", authConfig.getAuthMechanismConfig().getoAuthConfig().getOauthSaslMechanism());
         }
 
 
-        if (sourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext() != null) {
-            String protocol = sourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext();
+        if (authConfig != null &&
+                authConfig.getAuthProtocolConfig().getPlaintext() != null) {
+            String protocol = authConfig.getAuthProtocolConfig().getPlaintext();
             properties.put("security.protocol", protocol);
-        }else if(sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl() != null){
-            properties.put("security.protocol", sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl());
+        } else if (authConfig != null &&
+                authConfig.getAuthProtocolConfig().getSsl() != null) {
+            properties.put("security.protocol", authConfig.getAuthProtocolConfig().getSsl());
         }
         properties.put("session.timeout.ms", sourceConfig.getSchemaConfig().getSessionTimeoutms());
     }
@@ -388,44 +397,43 @@ public class KafkaSource implements Source<Record<Event>> {
     }
 
 
-    private boolean checkTopicAvailability(TopicConfig topic) {
+    private boolean isTopicExists(TopicConfig topic) {
         Properties properties = new Properties();
         properties.put("bootstrap.servers", "localhost:9092");
         properties.put("connections.max.idle.ms", 5000);
         properties.put("request.timeout.ms", 5000);
         try (AdminClient client = KafkaAdminClient.create(properties)) {
-            ListTopicsResult topics = client.listTopics();
+            boolean topicExists = client.listTopics().names().get().stream().anyMatch(topicName -> topicName.equalsIgnoreCase(topic.getName()));
+           /* ListTopicsResult topics = client.listTopics();
             Set<String> names = topics.names().get();
             if (!names.isEmpty()) {
                 for (String topicName : names) {
                     if (topicName.equalsIgnoreCase(topic.getName()))
                         return true;
                 }
-            }
-            return false;
+            }*/
+            return topicExists;
         } catch (InterruptedException | ExecutionException e) {
+            if (e.getCause() instanceof UnknownTopicOrPartitionException) {
+                LOG.error("Topic does not exist: " + topic.getName());
+            }
             throw new RuntimeException("Exception while checking the topics availability...");
         }
     }
 
-    private boolean getKafkaServerRunningStatus(List<String> bootStrapServers) {
+    private boolean isKafkaClusterExists(List<String> bootStrapServers) {
         Properties props = new Properties();
         props.put("bootstrap.servers", bootStrapServers);
         props.put("request.timeout.ms", 10000);
         props.put("connections.max.idle.ms", 5000);
 
-        AdminClient adminClient = AdminClient.create(props);
-        Collection<Node> nodes = null;
-        try {
-            nodes = adminClient.describeCluster()
-                    .nodes()
-                    .get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e.getCause());
-        } catch (ExecutionException e) {
+        try (AdminClient adminClient = AdminClient.create(props)) {
+            boolean connected = adminClient.describeCluster().clusterId().get() != null;
+            return connected;
+        } catch (InterruptedException | ExecutionException e) {
+            LOG.error("Failed to connect to the Kafka cluster...");
             throw new RuntimeException(e.getCause());
         }
-        return nodes != null && nodes.size() > 0;
     }
 
 }

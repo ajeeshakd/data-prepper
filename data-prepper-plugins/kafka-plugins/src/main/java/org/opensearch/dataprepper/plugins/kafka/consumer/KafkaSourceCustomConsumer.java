@@ -219,7 +219,8 @@ public class KafkaSourceCustomConsumer implements Runnable, ConsumerRebalanceLis
                 }
             } catch (Exception e){
                 LOG.error("Failed to parse JSON or AVRO record");
-                return null;
+                data.put(key, value);
+                //return null;
             }
         } else {
             value = (String)consumerRecord.value();

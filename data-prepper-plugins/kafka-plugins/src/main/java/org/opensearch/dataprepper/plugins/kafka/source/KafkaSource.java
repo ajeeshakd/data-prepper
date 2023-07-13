@@ -272,7 +272,7 @@ public class KafkaSource implements Source<Record<Event>> {
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,
                 topicConfig.getAutoCommit());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupID);
-        //setConsumerOptionalProperties(properties, topicConfig);
+        setConsumerOptionalProperties(properties, topicConfig);
     }
 
     private void setConsumerOptionalProperties(Properties properties, TopicConfig topicConfig) {

@@ -8,7 +8,6 @@ package org.opensearch.dataprepper.plugins.kafka.configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AuthProtocolConfig {
-
     @JsonProperty("plaintext")
     private String plaintext;
     @JsonProperty("ssl")

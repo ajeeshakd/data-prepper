@@ -204,7 +204,7 @@ public class KafkaSource implements Source<Record<Event>> {
     }
 
     private void setBoostStrapServerProperties(Properties properties, TopicConfig topic) {
-        if (sourceConfig.getAuthConfig() != null) {
+        if (sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null ) {
             String clusterApiKey = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiKey();
             String clusterApiSecret = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getClusterApiSecret();
             properties.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username='" + clusterApiKey + "' password='" + clusterApiSecret + "';");
@@ -294,17 +294,19 @@ public class KafkaSource implements Source<Record<Event>> {
             properties.put("schema.registry.basic.auth.user.info", schemaBasicAuthUserInfo);
             properties.put("basic.auth.credentials.source", "USER_INFO");
         }
-        String sasl_mechanism = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getSaslMechanism();
-        if(StringUtils.isNotEmpty(sasl_mechanism)){
+
+        if(sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig() != null){
+            String sasl_mechanism = sourceConfig.getAuthConfig().getAuthMechanismConfig().getPlainTextAuthConfig().getSaslMechanism();
             properties.put("sasl.mechanism", sasl_mechanism);
-        }else if(StringUtils.isNotEmpty(sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslMechanism())){
+        }else if(sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig()!= null){
             properties.put("sasl.mechanism",  sourceConfig.getAuthConfig().getAuthMechanismConfig().getoAuthConfig().getOauthSaslMechanism());
         }
 
-        String protocol = sourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext();
-        if (StringUtils.isNotEmpty(protocol)) {
+
+        if (sourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext() != null) {
+            String protocol = sourceConfig.getAuthConfig().getAuthProtocolConfig().getPlaintext();
             properties.put("security.protocol", protocol);
-        }else if(StringUtils.isNotEmpty(sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl())){
+        }else if(sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl() != null){
             properties.put("security.protocol", sourceConfig.getAuthConfig().getAuthProtocolConfig().getSsl());
         }
         properties.put("session.timeout.ms", sourceConfig.getSchemaConfig().getSessionTimeoutms());

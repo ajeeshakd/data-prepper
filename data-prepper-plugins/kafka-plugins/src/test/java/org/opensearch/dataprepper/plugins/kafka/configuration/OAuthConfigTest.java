@@ -51,7 +51,7 @@ public class OAuthConfigTest {
             String json = mapper.writeValueAsString(kafkaConfigMap);
             Reader reader = new StringReader(json);
             KafkaSourceConfig kafkaSourceConfig = mapper.readValue(reader, KafkaSourceConfig.class);
-            oAuthConfig = kafkaSourceConfig.getAuthConfig().getSaslAuthConfig().getOAuthConfig();
+            oAuthConfig = kafkaSourceConfig.getAuthConfig().getSaslAuthConfig().getAuthMechanismConfig().getOAuthConfig();
             oauthClientId= oAuthConfig.getOauthClientId();
             oauthClientSecret = oAuthConfig.getOauthClientSecret();
             oauthLoginServer= oAuthConfig.getOauthLoginServer();

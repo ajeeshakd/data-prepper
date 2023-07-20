@@ -19,6 +19,13 @@ public class PlainTextAuthConfig {
     @JsonProperty("password")
     private String password;
 
+    @JsonProperty("sasl_mechanism")
+    private String saslMechanism;
+
+    public String getSaslMechanism() {
+        return saslMechanism;
+    }
+
     public String getUsername() {
         return username;
     }

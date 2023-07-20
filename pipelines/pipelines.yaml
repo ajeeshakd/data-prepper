@@ -1,0 +1,36 @@
+log-pipeline:
+  source:
+    kafka:
+      bootstrap_servers:
+        - localhost:9092
+      topics:
+        - name: kafka-json
+          workers: 5
+          auto_commit: false
+          auto_commit_interval: PT5S
+          session_timeout: PT45S
+          max_retry_attempts: 1000
+          auto_offset_reset: earliest
+          thread_waiting_time: PT1S
+          max_record_fetch_time: PT4S
+          heart_beat_interval: PT3S
+          buffer_default_timeout: PT5S
+          fetch_max_bytes: 52428800
+          fetch_max_wait: 500
+          fetch_min_bytes: 1
+          retry_backoff: PT100S
+          consumer_max_poll_records: 500
+      encryption: plaintext
+      schema:
+        registry_url: http://localhost:8085
+        version: 1
+        session_timeout_ms: 45000
+      authentication:
+        sasl:
+          protocol:
+            plaintext: PLAINTEXT #local schema registry
+          mechanism:
+            plain:
+              sasl_mechanism: PLAIN
+  sink:
+    - stdout:

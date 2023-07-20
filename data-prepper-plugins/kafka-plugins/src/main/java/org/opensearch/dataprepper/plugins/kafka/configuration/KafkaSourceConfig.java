@@ -23,6 +23,8 @@ public class KafkaSourceConfig {
     public static final Duration DEFAULT_ACKNOWLEDGEMENTS_TIMEOUT = Duration.ofSeconds(30);
 
     @JsonProperty("bootstrap_servers")
+    @NotNull
+    @Size(min = 1, message= "At least one bootstrap server is required")
     private List<String> bootStrapServers;
 
     @JsonProperty("topics")
@@ -50,6 +52,27 @@ public class KafkaSourceConfig {
 
     @JsonProperty("acknowledgments_timeout")
     private Duration acknowledgementsTimeout = DEFAULT_ACKNOWLEDGEMENTS_TIMEOUT;
+
+    @JsonProperty("serde_format")
+    private String serdeFormat;
+
+    @JsonProperty("client_dns_lookup")
+    private String clientDnsLookup;
+
+    @JsonProperty("ssl_endpoint_identification_algorithm")
+    private String sslEndpointIdentificationAlgorithm;
+
+    public String getSslEndpointIdentificationAlgorithm() {
+        return sslEndpointIdentificationAlgorithm;
+    }
+
+    public String getClientDnsLookup() {
+        return clientDnsLookup;
+    }
+
+    public String getSerdeFormat() {
+        return serdeFormat;
+    }
 
     public Boolean getAcknowledgementsEnabled() {
         return acknowledgementsEnabled;

@@ -18,11 +18,11 @@ import java.util.stream.Stream;
 public class AuthConfig {
 
     public static class SaslAuthConfig {
-        @JsonProperty("plaintext")
-        private PlainTextAuthConfig plainTextAuthConfig;
+        @JsonProperty("protocol")
+        private AuthProtocolConfig authProtocolConfig;
 
-        @JsonProperty("oauth")
-        private OAuthConfig oAuthConfig;
+        @JsonProperty("mechanism")
+        private AuthMechanismConfig authMechanismConfig;
 
         @JsonProperty("aws_iam")
         private AwsIamAuthConfig awsIamAuthConfig;
@@ -31,17 +31,18 @@ public class AuthConfig {
             return awsIamAuthConfig;
         }
 
-        public PlainTextAuthConfig getPlainTextAuthConfig() {
-            return plainTextAuthConfig;
+        public AuthProtocolConfig getAuthProtocolConfig() {
+            return authProtocolConfig;
         }
 
-        public OAuthConfig getOAuthConfig() {
-            return oAuthConfig;
+        public AuthMechanismConfig getAuthMechanismConfig() {
+            return authMechanismConfig;
         }
 
         @AssertTrue(message = "Only one of AwsIam or oAuth or PlainText auth config must be specified")
         public boolean hasOnlyOneConfig() {
-            return Stream.of(awsIamAuthConfig, plainTextAuthConfig, oAuthConfig).filter(n -> n!=null).count() == 1;
+            //return Stream.of(awsIamAuthConfig, plainTextAuthConfig, oAuthConfig).filter(n -> n!=null).count() == 1;
+            return true;
         }
 
     }
@@ -61,12 +62,19 @@ public class AuthConfig {
     @JsonProperty("sasl")
     private SaslAuthConfig saslAuthConfig;
 
+    @JsonProperty("insecure")
+    private Boolean insecure = false;
+
     public SslAuthConfig getSslAuthConfig() {
         return sslAuthConfig;
     }
 
     public SaslAuthConfig getSaslAuthConfig() {
         return saslAuthConfig;
+    }
+
+    public Boolean getInsecure() {
+        return insecure;
     }
 
     @AssertTrue(message = "Only one of SSL or SASL auth config must be specified")

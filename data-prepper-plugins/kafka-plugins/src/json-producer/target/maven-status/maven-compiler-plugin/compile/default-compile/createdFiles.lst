@@ -1,0 +1,5 @@
+com\test\producer\TestProducer.class
+guru\learningjournal\kafka\examples\Dispatcher.class
+guru\learningjournal\kafka\examples\StockData.class
+guru\learningjournal\kafka\examples\JsonSerializer.class
+guru\learningjournal\kafka\examples\JsonProducerDemo.class
